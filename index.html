@@ -717,7 +717,7 @@ function updateZoneCounts() {
   const absentCount = roster.filter(p => p.group === 'absent').length;
 
   const pc = document.getElementById('count-pitch');
-  pc.textContent = `(${pitchCount}/11)`;
+  pc.textContent = pitchCount ? `(${pitchCount})` : '';
   pc.className = `zone-count ${pitchCount === 11 ? 'full' : pitchCount > 11 ? 'over' : 'some'}`;
 
   document.getElementById('count-bench').textContent  = benchCount  ? `(${benchCount})` : '';
@@ -828,8 +828,8 @@ document.getElementById('start-btn').onclick = () => {
   const starters = roster.filter(p => p.group === 'pitch').map(p => p.name);
   const bench    = roster.filter(p => p.group === 'bench').map(p => p.name);
 
-  if (starters.length !== 11) {
-    error.textContent = `Starting 11 needs exactly 11 players (currently ${starters.length}).`;
+  if (starters.length === 0) {
+    error.textContent = 'Add at least one player to the starting lineup.';
     return;
   }
 
