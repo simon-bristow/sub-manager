@@ -513,7 +513,7 @@
     padding: 7px 8px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
     flex-shrink: 0;
   }
   .log-time {
@@ -522,6 +522,19 @@
     color: var(--accent);
     font-weight: 700;
   }
+  .log-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .log-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-top: 2px;
+    border-top: 1px solid var(--border);
+  }
+  .log-pair:first-child { border-top: none; padding-top: 0; }
   .log-on  { font-size: 11px; color: var(--green); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .log-off { font-size: 11px; color: var(--red);   font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -1124,6 +1137,7 @@ document.getElementById('confirm-sub-btn').onclick = () => {
   if (stagedSubs.length === 0) return;
   const minute = Math.floor(halfElapsed() / 60) + (half === 2 ? 40 : 0);
 
+  const pairs = [];
   stagedSubs.forEach(({ offId, onId }) => {
     const off = players.find(p => p.id === offId);
     const on  = players.find(p => p.id === onId);
@@ -1133,8 +1147,9 @@ document.getElementById('confirm-sub-btn').onclick = () => {
     on.onPitch = true;
     on.lastOnAt = matchSeconds;
     on.subCount++;
-    subLog.push({ minute, onName: on.name, offName: off.name });
+    pairs.push({ onName: on.name, offName: off.name });
   });
+  subLog.push({ minute, pairs });
 
   renderSubLog();
   stagedSubs = [];
@@ -1146,12 +1161,18 @@ document.getElementById('confirm-sub-btn').onclick = () => {
 function renderSubLog() {
   const entries = document.getElementById('sub-log-entries');
   const count   = document.getElementById('sub-count');
-  count.textContent = subLog.length ? `(${subLog.length})` : '';
+  const total = subLog.reduce((n, e) => n + e.pairs.length, 0);
+  count.textContent = total ? `(${total})` : '';
   entries.innerHTML = subLog.slice().reverse().map(e => `
     <div class="sub-log-entry">
       <span class="log-time">${e.minute}'</span>
-      <span class="log-on">↑ ${escHtml(e.onName)}</span>
-      <span class="log-off">↓ ${escHtml(e.offName)}</span>
+      <div class="log-pairs">
+        ${e.pairs.map(p => `
+          <div class="log-pair">
+            <span class="log-on">↑ ${escHtml(p.onName)}</span>
+            <span class="log-off">↓ ${escHtml(p.offName)}</span>
+          </div>`).join('')}
+      </div>
     </div>
   `).join('');
 }
