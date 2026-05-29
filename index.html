@@ -366,12 +366,14 @@
 
   .player-card {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
     background: var(--surface);
     border: 2px solid transparent;
-    border-radius: 10px;
-    padding: 7px 10px;
+    border-radius: 8px;
+    padding: 7px 8px;
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s;
     user-select: none;
@@ -391,18 +393,21 @@
   }
 
   .player-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
   }
 
   .time-played {
-    font-size: 12px;
+    font-size: 11px;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
     font-weight: 500;
+    flex-shrink: 0;
   }
 
   .player-card.on-pitch .time-played { color: var(--green); }
