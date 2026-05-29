@@ -34,97 +34,113 @@
 
   /* ─── SETUP SCREEN ─── */
   #setup-screen {
-    padding: 24px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: 12px 12px 16px;
+    gap: 10px;
   }
 
-  .setup-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .setup-sub {
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-
-  .player-row {
+  .setup-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+  .setup-logo {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .setup-title {
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .setup-sub {
+    font-size: 12px;
+    color: var(--muted);
   }
 
-  .player-row input[type="text"] {
+  .setup-zones {
     flex: 1;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 16px;
-    padding: 11px 14px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .player-row input[type="text"]:focus {
-    border-color: var(--green);
-  }
-  .player-row input[type="text"]::placeholder {
-    color: var(--muted);
+    display: grid;
+    grid-template-columns: 5fr 4fr 4fr;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    min-height: 0;
   }
 
-  .gk-badge {
-    font-size: 11px;
-    font-weight: 700;
-    background: var(--accent);
-    color: #000;
-    border-radius: 6px;
-    padding: 3px 7px;
-    white-space: nowrap;
-  }
-
-  .remove-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 22px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-  .remove-btn:hover { color: var(--red); }
-
-  .add-btn {
+  .setup-zone {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface);
-    border: 1.5px dashed var(--border);
-    border-radius: 10px;
-    color: var(--muted);
-    font-size: 15px;
-    padding: 11px 14px;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 8px;
-    transition: border-color 0.15s, color 0.15s;
+    flex-direction: column;
+    padding: 8px 5px;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+    transition: background 0.15s;
   }
-  .add-btn:hover { border-color: var(--green); color: var(--green); }
+  .setup-zone:last-child { border-right: none; }
+  .setup-zone.drag-over { background: rgba(255,255,255,0.04); }
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 20px 0;
+  .zone-header {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+  }
+  .zone-count { margin-left: 3px; }
+  .zone-count.full  { color: var(--green); }
+  .zone-count.over  { color: var(--red); }
+  .zone-count.some  { color: var(--accent); }
+
+  .zone-cards {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .roster-card {
+    border-radius: 8px;
+    padding: 7px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    transition: opacity 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .roster-card.pitch-card  { background: rgba(34,197,94,0.18);  color: #86efac; border: 1px solid rgba(34,197,94,0.35); }
+  .roster-card.bench-card  { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.35); }
+  .roster-card.absent-card { background: var(--surface2); color: var(--muted); border: 1px solid transparent; }
+  .roster-card.is-dragging { opacity: 0.25; }
+
+  /* ghost clone while dragging */
+  .drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transform: rotate(2deg) scale(1.05);
+    opacity: 0.95;
+    white-space: nowrap;
   }
 
   .start-btn {
@@ -132,13 +148,13 @@
     width: 100%;
     background: var(--green);
     color: #fff;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     border: none;
     border-radius: 14px;
-    padding: 16px;
+    padding: 14px;
     cursor: pointer;
-    margin-top: 28px;
+    flex-shrink: 0;
     transition: background 0.15s;
   }
   .start-btn:hover { background: var(--green-dark); }
@@ -147,8 +163,8 @@
   .error-msg {
     color: var(--red);
     font-size: 13px;
-    margin-top: 10px;
     text-align: center;
+    flex-shrink: 0;
   }
 
   /* ─── MATCH SCREEN ─── */
@@ -519,17 +535,28 @@
 
 <!-- ═══════════════════════════════════════ SETUP ═══ -->
 <div id="setup-screen">
-  <p class="setup-title">Sub Manager</p>
-  <p class="setup-sub">Set up your squad for today's match</p>
+  <div class="setup-header">
+    <img id="setup-logo" class="setup-logo" alt="CGFC">
+    <div>
+      <div class="setup-title">Sub Manager</div>
+      <div class="setup-sub">Drag players to assign roles</div>
+    </div>
+  </div>
 
-  <p class="section-label">Starting 11</p>
-  <div id="starters-list"></div>
-
-  <div class="divider"></div>
-
-  <p class="section-label">Bench</p>
-  <div id="bench-list"></div>
-  <button class="add-btn" id="add-bench-btn">+ Add bench player</button>
+  <div class="setup-zones">
+    <div class="setup-zone" id="zone-pitch" data-zone="pitch">
+      <div class="zone-header">Starting 11 <span class="zone-count" id="count-pitch"></span></div>
+      <div class="zone-cards" id="cards-pitch"></div>
+    </div>
+    <div class="setup-zone" id="zone-bench" data-zone="bench">
+      <div class="zone-header">Bench <span class="zone-count" id="count-bench"></span></div>
+      <div class="zone-cards" id="cards-bench"></div>
+    </div>
+    <div class="setup-zone" id="zone-absent" data-zone="absent">
+      <div class="zone-header">Absent <span class="zone-count" id="count-absent"></span></div>
+      <div class="zone-cards" id="cards-absent"></div>
+    </div>
+  </div>
 
   <p id="setup-error" class="error-msg"></p>
   <button class="start-btn" id="start-btn">Start Match</button>
@@ -642,76 +669,166 @@ let matchOver = false;
 
 // ─── Setup Screen ────────────────────────────────────────────────────────────
 
-const defaultStarters = [
-  'Goalkeeper', 'Player 2', 'Player 3', 'Player 4', 'Player 5',
-  'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11'
-];
+const SQUAD = ['Conrad','Sam','Noah','Arlo','Eoin','Cooper','Hobie','Tom','Harry','Oak','Cohen','Akira','Hamish','Amina','Otis','Tate','Sol'];
+
+// roster: array of { name, group: 'pitch'|'bench'|'absent' }
+let roster = SQUAD.map(name => ({ name, group: 'absent' }));
+
+// ── Drag state ──
+let dragName   = null;
+let dragGhostEl = null;
+let dragSourceCard = null;
 
 function buildSetup() {
-  const startersList = document.getElementById('starters-list');
-  startersList.innerHTML = '';
-  defaultStarters.forEach((name, i) => {
-    startersList.appendChild(makeSetupRow(name, i === 0 ? 'GK' : null, false));
+  // Copy logo src from match header into setup logo
+  const matchLogo = document.querySelector('.team-logo');
+  if (matchLogo) document.getElementById('setup-logo').src = matchLogo.src;
+  renderSetupZones();
+  setupDragDrop();
+}
+
+function renderSetupZones() {
+  ['pitch','bench','absent'].forEach(group => {
+    const container = document.getElementById(`cards-${group}`);
+    container.innerHTML = '';
+    roster.filter(p => p.group === group).forEach(p => {
+      container.appendChild(makeRosterCard(p.name, group));
+    });
+  });
+  updateZoneCounts();
+}
+
+function makeRosterCard(name, group) {
+  const card = document.createElement('div');
+  card.className = `roster-card ${group}-card`;
+  card.textContent = name;
+  card.dataset.name = name;
+  return card;
+}
+
+function updateZoneCounts() {
+  const pitchCount  = roster.filter(p => p.group === 'pitch').length;
+  const benchCount  = roster.filter(p => p.group === 'bench').length;
+  const absentCount = roster.filter(p => p.group === 'absent').length;
+
+  const pc = document.getElementById('count-pitch');
+  pc.textContent = `(${pitchCount}/11)`;
+  pc.className = `zone-count ${pitchCount === 11 ? 'full' : pitchCount > 11 ? 'over' : 'some'}`;
+
+  document.getElementById('count-bench').textContent  = benchCount  ? `(${benchCount})` : '';
+  document.getElementById('count-absent').textContent = absentCount ? `(${absentCount})` : '';
+}
+
+// ── Touch drag-and-drop ──
+function setupDragDrop() {
+  document.querySelectorAll('.setup-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      if (dragName) dropIntoZone(zone.dataset.zone);
+    });
+  });
+
+  attachCardListeners();
+}
+
+function attachCardListeners() {
+  document.querySelectorAll('.roster-card').forEach(card => {
+    // Desktop drag
+    card.draggable = true;
+    card.addEventListener('dragstart', e => {
+      dragName = card.dataset.name;
+      dragSourceCard = card;
+      setTimeout(() => card.classList.add('is-dragging'), 0);
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('is-dragging');
+      dragName = null;
+      dragSourceCard = null;
+    });
+
+    // Touch drag
+    card.addEventListener('touchstart', onTouchStart, { passive: false });
+    card.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    card.addEventListener('touchend',   onTouchEnd,   { passive: false });
   });
 }
 
-function makeSetupRow(value, badge, removable) {
-  const row = document.createElement('div');
-  row.className = 'player-row';
+function onTouchStart(e) {
+  e.preventDefault();
+  const card = e.currentTarget;
+  dragName = card.dataset.name;
+  dragSourceCard = card;
+  card.classList.add('is-dragging');
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.value = value;
-  input.placeholder = 'Player name';
-  row.appendChild(input);
-
-  if (badge) {
-    const b = document.createElement('span');
-    b.className = 'gk-badge';
-    b.textContent = badge;
-    row.appendChild(b);
-  }
-
-  if (removable) {
-    const btn = document.createElement('button');
-    btn.className = 'remove-btn';
-    btn.textContent = '−';
-    btn.onclick = () => row.remove();
-    row.appendChild(btn);
-  }
-
-  return row;
+  // Create ghost
+  dragGhostEl = card.cloneNode(true);
+  dragGhostEl.className = `drag-ghost ${card.className.replace('roster-card','').replace('is-dragging','').trim()}-card`;
+  dragGhostEl.style.background = getComputedStyle(card).background;
+  dragGhostEl.style.color = getComputedStyle(card).color;
+  dragGhostEl.style.border = getComputedStyle(card).border;
+  dragGhostEl.style.minWidth = card.offsetWidth + 'px';
+  positionGhost(e.touches[0]);
+  document.body.appendChild(dragGhostEl);
 }
 
-document.getElementById('add-bench-btn').onclick = () => {
-  const benchList = document.getElementById('bench-list');
-  benchList.appendChild(makeSetupRow('', null, true));
-  // Focus the new input
-  benchList.lastChild.querySelector('input').focus();
-};
+function onTouchMove(e) {
+  e.preventDefault();
+  positionGhost(e.touches[0]);
+  // Highlight zone under finger
+  dragGhostEl.style.display = 'none';
+  const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+  dragGhostEl.style.display = '';
+  document.querySelectorAll('.setup-zone').forEach(z => z.classList.remove('drag-over'));
+  const zone = el?.closest('.setup-zone');
+  if (zone) zone.classList.add('drag-over');
+}
+
+function onTouchEnd(e) {
+  e.preventDefault();
+  dragGhostEl?.remove(); dragGhostEl = null;
+  dragSourceCard?.classList.remove('is-dragging');
+
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  document.querySelectorAll('.setup-zone').forEach(z => z.classList.remove('drag-over'));
+  const zone = el?.closest('.setup-zone');
+  if (zone && dragName) dropIntoZone(zone.dataset.zone);
+
+  dragName = null;
+  dragSourceCard = null;
+}
+
+function positionGhost(touch) {
+  if (!dragGhostEl) return;
+  dragGhostEl.style.left = (touch.clientX - dragGhostEl.offsetWidth / 2) + 'px';
+  dragGhostEl.style.top  = (touch.clientY - 20) + 'px';
+}
+
+function dropIntoZone(group) {
+  const player = roster.find(p => p.name === dragName);
+  if (player) {
+    player.group = group;
+    renderSetupZones();
+    attachCardListeners();
+  }
+}
 
 document.getElementById('start-btn').onclick = () => {
   const error = document.getElementById('setup-error');
   error.textContent = '';
 
-  const starterInputs = [...document.querySelectorAll('#starters-list input')];
-  const benchInputs   = [...document.querySelectorAll('#bench-list input')];
-
-  const starters = starterInputs.map(i => i.value.trim()).filter(Boolean);
-  const bench    = benchInputs.map(i => i.value.trim()).filter(Boolean);
+  const starters = roster.filter(p => p.group === 'pitch').map(p => p.name);
+  const bench    = roster.filter(p => p.group === 'bench').map(p => p.name);
 
   if (starters.length !== 11) {
-    error.textContent = 'Please fill in all 11 starter names.';
+    error.textContent = `Starting 11 needs exactly 11 players (currently ${starters.length}).`;
     return;
   }
 
   const allNames = [...starters, ...bench];
-  const unique = new Set(allNames.map(n => n.toLowerCase()));
-  if (unique.size !== allNames.length) {
-    error.textContent = 'Player names must be unique.';
-    return;
-  }
-
   players = allNames.map((name, i) => ({
     id: i,
     name,
