@@ -885,6 +885,9 @@ function tick() {
   updateClock();
   renderPlayerTimes();
 
+  // Re-sort cards every 60 seconds so order stays accurate
+  if (matchSeconds % 60 === 0) renderPlayerLists();
+
   const elapsed = halfElapsed();
 
   // Auto-trigger half time at 40min
