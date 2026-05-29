@@ -578,9 +578,9 @@
       <div class="clock" id="clock">00:00</div>
     </div>
     <div class="timer-controls">
-      <button class="ctrl-btn green" id="timer-btn">Start</button>
-      <button class="ctrl-btn" id="half-btn">Half Time</button>
-      <button class="ctrl-btn" id="reset-btn">Reset</button>
+      <button class="ctrl-btn green" id="timer-btn">▶</button>
+      <button class="ctrl-btn" id="half-btn">H/T</button>
+      <button class="ctrl-btn" id="reset-btn">✕</button>
     </div>
   </div>
 
@@ -878,7 +878,7 @@ function tick() {
   if (half === 1 && elapsed >= HALF_DURATION) {
     timerRunning = false;
     clearInterval(intervalId);
-    document.getElementById('timer-btn').textContent = 'Resume';
+    document.getElementById('timer-btn').textContent = '▶';
     document.getElementById('timer-btn').classList.remove('green');
     document.getElementById('halftime-overlay').classList.add('visible');
   }
@@ -888,7 +888,7 @@ function tick() {
     timerRunning = false;
     clearInterval(intervalId);
     matchOver = true;
-    document.getElementById('timer-btn').textContent = 'Start';
+    document.getElementById('timer-btn').textContent = '▶';
     document.getElementById('timer-btn').disabled = true;
     document.getElementById('half-btn').disabled = true;
     document.getElementById('full-time-banner').style.display = 'block';
@@ -907,11 +907,11 @@ document.getElementById('timer-btn').onclick = () => {
   timerRunning = !timerRunning;
   const btn = document.getElementById('timer-btn');
   if (timerRunning) {
-    btn.textContent = 'Pause';
+    btn.textContent = '⏸';
     btn.classList.add('green');
     intervalId = setInterval(tick, 1000);
   } else {
-    btn.textContent = 'Resume';
+    btn.textContent = '▶';
     btn.classList.remove('green');
     clearInterval(intervalId);
   }
@@ -921,7 +921,7 @@ document.getElementById('half-btn').onclick = () => {
   if (half === 1) {
     timerRunning = false;
     clearInterval(intervalId);
-    document.getElementById('timer-btn').textContent = 'Resume';
+    document.getElementById('timer-btn').textContent = '▶';
     document.getElementById('timer-btn').classList.remove('green');
     document.getElementById('halftime-overlay').classList.add('visible');
   } else {
@@ -929,7 +929,7 @@ document.getElementById('half-btn').onclick = () => {
     timerRunning = false;
     clearInterval(intervalId);
     matchOver = true;
-    document.getElementById('timer-btn').textContent = 'Start';
+    document.getElementById('timer-btn').textContent = '▶';
     document.getElementById('timer-btn').disabled = true;
     document.getElementById('half-btn').disabled = true;
     document.getElementById('full-time-banner').style.display = 'block';
@@ -943,10 +943,10 @@ document.getElementById('start-second-btn').onclick = () => {
   half = 2;
   halfStartOffset = matchSeconds;
   document.getElementById('half-label').textContent = '2nd Half';
-  document.getElementById('half-btn').textContent = 'Full Time';
+  document.getElementById('half-btn').textContent = 'F/T';
   timerRunning = true;
   const btn = document.getElementById('timer-btn');
-  btn.textContent = 'Pause';
+  btn.textContent = '⏸';
   btn.classList.add('green');
   intervalId = setInterval(tick, 1000);
 };
