@@ -408,11 +408,45 @@
   .overlay-card {
     background: var(--surface);
     border-radius: 20px;
-    padding: 28px 24px;
+    padding: 24px;
     width: 100%;
     max-width: 360px;
+    max-height: 90dvh;
+    overflow-y: auto;
     text-align: center;
   }
+
+  /* Full time minutes table */
+  .ft-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    text-align: left;
+  }
+  .ft-table th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ft-table td {
+    font-size: 14px;
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ft-table tr:last-child td { border-bottom: none; }
+  .ft-mins {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--green);
+    text-align: right;
+  }
+  .ft-bar-cell { width: 60px; padding-left: 4px; }
+  .ft-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+  .ft-bar-fill  { background: var(--green); height: 100%; border-radius: 4px; transition: width 0.4s; }
   .overlay-title {
     font-size: 22px;
     font-weight: 800;
@@ -581,7 +615,11 @@
 <div class="overlay" id="fulltime-overlay">
   <div class="overlay-card">
     <div class="overlay-title">Full Time</div>
-    <div class="overlay-sub">80 minutes played. Match over.</div>
+    <div class="overlay-sub">Minutes played per player</div>
+    <table class="ft-table" id="ft-table">
+      <thead><tr><th>Player</th><th style="text-align:right">Mins</th><th class="ft-bar-cell"></th></tr></thead>
+      <tbody id="ft-table-body"></tbody>
+    </table>
     <button class="overlay-btn secondary" id="new-match-btn">New Match</button>
   </div>
 </div>
@@ -732,6 +770,7 @@ function tick() {
     document.getElementById('timer-btn').disabled = true;
     document.getElementById('half-btn').disabled = true;
     document.getElementById('full-time-banner').style.display = 'block';
+    renderFullTimeTable();
     document.getElementById('fulltime-overlay').classList.add('visible');
   }
 }
@@ -772,6 +811,7 @@ document.getElementById('half-btn').onclick = () => {
     document.getElementById('timer-btn').disabled = true;
     document.getElementById('half-btn').disabled = true;
     document.getElementById('full-time-banner').style.display = 'block';
+    renderFullTimeTable();
     document.getElementById('fulltime-overlay').classList.add('visible');
   }
 };
@@ -796,6 +836,22 @@ document.getElementById('stay-halftime-btn').onclick = () => {
 document.getElementById('new-match-btn').onclick = () => {
   location.reload();
 };
+
+function renderFullTimeTable() {
+  const sorted = players.slice().sort((a, b) => b.timeOnPitch - a.timeOnPitch);
+  const max = sorted[0].timeOnPitch || 1;
+  document.getElementById('ft-table-body').innerHTML = sorted.map(p => {
+    const mins = Math.floor(p.timeOnPitch / 60);
+    const secs = p.timeOnPitch % 60;
+    const label = `${mins}:${String(secs).padStart(2,'0')}`;
+    const pct = Math.round((p.timeOnPitch / max) * 100);
+    return `<tr>
+      <td>${escHtml(p.name)}</td>
+      <td class="ft-mins">${label}</td>
+      <td class="ft-bar-cell"><div class="ft-bar-wrap"><div class="ft-bar-fill" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  }).join('');
+}
 
 document.getElementById('reset-btn').onclick = () => {
   document.getElementById('reset-overlay').classList.add('visible');
