@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sub Manager</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #22c55e;
+    --green-dark: #16a34a;
+    --bench: #64748b;
+    --bench-dark: #475569;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #334155;
+    --accent: #f59e0b;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ─── SETUP SCREEN ─── */
+  #setup-screen {
+    padding: 24px 16px 40px;
+  }
+
+  .setup-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .setup-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .player-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .player-row input[type="text"] {
+    flex: 1;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 16px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .player-row input[type="text"]:focus {
+    border-color: var(--green);
+  }
+  .player-row input[type="text"]::placeholder {
+    color: var(--muted);
+  }
+
+  .gk-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--accent);
+    color: #000;
+    border-radius: 6px;
+    padding: 3px 7px;
+    white-space: nowrap;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .remove-btn:hover { color: var(--red); }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 15px;
+    padding: 11px 14px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .add-btn:hover { border-color: var(--green); color: var(--green); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  .start-btn {
+    display: block;
+    width: 100%;
+    background: var(--green);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: background 0.15s;
+  }
+  .start-btn:hover { background: var(--green-dark); }
+  .start-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* ─── MATCH SCREEN ─── */
+  #match-screen { display: none; flex-direction: column; height: 100dvh; overflow: hidden; }
+
+  /* Header */
+  .match-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .half-indicator {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .clock {
+    font-size: 32px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ctrl-btn {
+    background: var(--surface2);
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .ctrl-btn:hover { background: var(--border); }
+  .ctrl-btn.green { background: var(--green); color: #fff; }
+  .ctrl-btn.green:hover { background: var(--green-dark); }
+  .ctrl-btn.amber { background: var(--accent); color: #000; }
+
+  /* Sub action bar */
+  .sub-bar {
+    background: #1a2744;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sub-bar.visible { display: flex; }
+
+  .sub-bar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sub-bar-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+  .sub-bar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .cancel-sub-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+  }
+  .confirm-sub-btn {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .confirm-sub-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .staged-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .staged-pair {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  .pair-on  { color: var(--green); font-weight: 600; }
+  .pair-off { color: var(--red);   font-weight: 600; }
+  .pair-arrow { color: var(--muted); }
+  .pair-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 0 2px;
+    line-height: 1;
+  }
+  .pair-remove:hover { color: var(--red); }
+
+  .pending-hint {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Player lists */
+  .lists {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .list-section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+    padding: 10px 8px 10px 10px;
+  }
+  .list-section:last-child {
+    border-right: none;
+    padding: 10px 10px 10px 8px;
+  }
+
+  .list-header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+  .list-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .list-count {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .player-cards {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .player-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 9px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+
+  .player-card.on-pitch { border-color: var(--surface2); }
+
+  .player-card.selected-off {
+    border-color: var(--red);
+    background: rgba(239,68,68,0.12);
+  }
+  .player-card.selected-on {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.12);
+  }
+
+  .player-name {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .time-played {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .player-card.on-pitch .time-played { color: var(--green); }
+  .player-card.on-bench .time-played { color: var(--muted); }
+
+  /* Halftime overlay */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .overlay.visible { display: flex; }
+
+  .overlay-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+  .overlay-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .overlay-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .overlay-btn {
+    display: block;
+    width: 100%;
+    background: var(--green);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.15s;
+  }
+  .overlay-btn:hover { background: var(--green-dark); }
+  .overlay-btn.secondary {
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .overlay-btn.secondary:hover { background: var(--border); }
+
+  /* Sub log */
+  .sub-log {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 0 16px;
+    overflow-y: auto;
+    max-height: 160px;
+    flex-shrink: 0;
+  }
+  .sub-log-header {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 0 6px;
+  }
+  .sub-log-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .log-time {
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    font-weight: 700;
+    min-width: 38px;
+  }
+  .log-arrow { color: var(--muted); }
+  .log-on { color: var(--green); font-weight: 600; }
+  .log-off { color: var(--red); font-weight: 600; }
+
+  .full-time-banner {
+    background: var(--accent);
+    color: #000;
+    text-align: center;
+    font-weight: 800;
+    font-size: 14px;
+    padding: 10px;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ SETUP ═══ -->
+<div id="setup-screen">
+  <p class="setup-title">Sub Manager</p>
+  <p class="setup-sub">Set up your squad for today's match</p>
+
+  <p class="section-label">Starting 11</p>
+  <div id="starters-list"></div>
+
+  <div class="divider"></div>
+
+  <p class="section-label">Bench</p>
+  <div id="bench-list"></div>
+  <button class="add-btn" id="add-bench-btn">+ Add bench player</button>
+
+  <p id="setup-error" class="error-msg"></p>
+  <button class="start-btn" id="start-btn">Start Match</button>
+</div>
+
+<!-- ═══════════════════════════════════════ MATCH ═══ -->
+<div id="match-screen">
+  <div id="full-time-banner" class="full-time-banner" style="display:none">FULL TIME</div>
+
+  <div class="match-header">
+    <div>
+      <div class="half-indicator" id="half-label">1st Half</div>
+      <div class="clock" id="clock">00:00</div>
+    </div>
+    <div class="timer-controls">
+      <button class="ctrl-btn green" id="timer-btn">Start</button>
+      <button class="ctrl-btn" id="half-btn">Half Time</button>
+    </div>
+  </div>
+
+  <div class="sub-bar" id="sub-bar">
+    <div class="sub-bar-header">
+      <span class="sub-bar-title">Substitutions</span>
+      <div class="sub-bar-actions">
+        <button class="cancel-sub-btn" id="cancel-sub-btn" title="Clear all">✕</button>
+        <button class="confirm-sub-btn" id="confirm-sub-btn" disabled>Confirm All</button>
+      </div>
+    </div>
+    <div class="staged-pairs" id="staged-pairs"></div>
+    <div class="pending-hint" id="pending-hint" style="display:none"></div>
+  </div>
+
+  <div class="lists">
+    <div class="list-section">
+      <div class="list-header">
+        <span class="list-title">Pitch</span>
+        <span class="list-count" id="pitch-count"></span>
+      </div>
+      <div class="player-cards" id="pitch-list"></div>
+    </div>
+
+    <div class="list-section">
+      <div class="list-header">
+        <span class="list-title">Bench</span>
+        <span class="list-count" id="bench-count"></span>
+      </div>
+      <div class="player-cards" id="bench-list-match"></div>
+    </div>
+  </div>
+
+  <div class="sub-log" id="sub-log" style="display:none">
+    <div class="sub-log-header">Substitutions</div>
+    <div id="sub-log-entries"></div>
+  </div>
+</div>
+
+<!-- Halftime overlay -->
+<div class="overlay" id="halftime-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Half Time</div>
+    <div class="overlay-sub">40 minutes done. Ready for the second half?</div>
+    <button class="overlay-btn" id="start-second-btn">Start 2nd Half</button>
+    <button class="overlay-btn secondary" id="stay-halftime-btn">Stay at Half Time</button>
+  </div>
+</div>
+
+<!-- Full time overlay -->
+<div class="overlay" id="fulltime-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Full Time</div>
+    <div class="overlay-sub">80 minutes played. Match over.</div>
+    <button class="overlay-btn secondary" id="new-match-btn">New Match</button>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+
+const HALF_DURATION = 40 * 60; // seconds
+
+let players = [];   // { id, name, onPitch, timeOnPitch (s), subCount, lastOnAt (match seconds) }
+let timerRunning = false;
+let matchSeconds = 0;
+let half = 1;       // 1 or 2
+let halfStartOffset = 0; // seconds at which current half started in matchSeconds
+let intervalId = null;
+let subLog = [];    // { minute, on, off }
+let pendingOff = null;   // pitch player tapped, waiting for bench pick
+let stagedSubs = [];    // [{offId, onId}] confirmed pairs waiting for "Confirm All"
+let matchOver = false;
+
+// ─── Setup Screen ────────────────────────────────────────────────────────────
+
+const defaultStarters = [
+  'Goalkeeper', 'Player 2', 'Player 3', 'Player 4', 'Player 5',
+  'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11'
+];
+
+function buildSetup() {
+  const startersList = document.getElementById('starters-list');
+  startersList.innerHTML = '';
+  defaultStarters.forEach((name, i) => {
+    startersList.appendChild(makeSetupRow(name, i === 0 ? 'GK' : null, false));
+  });
+}
+
+function makeSetupRow(value, badge, removable) {
+  const row = document.createElement('div');
+  row.className = 'player-row';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = value;
+  input.placeholder = 'Player name';
+  row.appendChild(input);
+
+  if (badge) {
+    const b = document.createElement('span');
+    b.className = 'gk-badge';
+    b.textContent = badge;
+    row.appendChild(b);
+  }
+
+  if (removable) {
+    const btn = document.createElement('button');
+    btn.className = 'remove-btn';
+    btn.textContent = '−';
+    btn.onclick = () => row.remove();
+    row.appendChild(btn);
+  }
+
+  return row;
+}
+
+document.getElementById('add-bench-btn').onclick = () => {
+  const benchList = document.getElementById('bench-list');
+  benchList.appendChild(makeSetupRow('', null, true));
+  // Focus the new input
+  benchList.lastChild.querySelector('input').focus();
+};
+
+document.getElementById('start-btn').onclick = () => {
+  const error = document.getElementById('setup-error');
+  error.textContent = '';
+
+  const starterInputs = [...document.querySelectorAll('#starters-list input')];
+  const benchInputs   = [...document.querySelectorAll('#bench-list input')];
+
+  const starters = starterInputs.map(i => i.value.trim()).filter(Boolean);
+  const bench    = benchInputs.map(i => i.value.trim()).filter(Boolean);
+
+  if (starters.length !== 11) {
+    error.textContent = 'Please fill in all 11 starter names.';
+    return;
+  }
+
+  const allNames = [...starters, ...bench];
+  const unique = new Set(allNames.map(n => n.toLowerCase()));
+  if (unique.size !== allNames.length) {
+    error.textContent = 'Player names must be unique.';
+    return;
+  }
+
+  players = allNames.map((name, i) => ({
+    id: i,
+    name,
+    onPitch: i < 11,
+    timeOnPitch: 0,
+    subCount: 0,
+    lastOnAt: i < 11 ? 0 : null,
+  }));
+
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('match-screen').style.display = 'flex';
+  renderMatch();
+};
+
+// ─── Timer ───────────────────────────────────────────────────────────────────
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function halfElapsed() {
+  return matchSeconds - halfStartOffset;
+}
+
+function tick() {
+  if (!timerRunning || matchOver) return;
+  matchSeconds++;
+
+  // Update time for pitching players
+  players.forEach(p => {
+    if (p.onPitch) p.timeOnPitch++;
+  });
+
+  updateClock();
+  renderPlayerTimes();
+
+  const elapsed = halfElapsed();
+
+  // Auto-trigger half time at 40min
+  if (half === 1 && elapsed >= HALF_DURATION) {
+    timerRunning = false;
+    clearInterval(intervalId);
+    document.getElementById('timer-btn').textContent = 'Resume';
+    document.getElementById('timer-btn').classList.remove('green');
+    document.getElementById('halftime-overlay').classList.add('visible');
+  }
+
+  // Auto-trigger full time at 80min
+  if (half === 2 && elapsed >= HALF_DURATION) {
+    timerRunning = false;
+    clearInterval(intervalId);
+    matchOver = true;
+    document.getElementById('timer-btn').textContent = 'Start';
+    document.getElementById('timer-btn').disabled = true;
+    document.getElementById('half-btn').disabled = true;
+    document.getElementById('full-time-banner').style.display = 'block';
+    document.getElementById('fulltime-overlay').classList.add('visible');
+  }
+}
+
+function updateClock() {
+  const display = halfElapsed();
+  document.getElementById('clock').textContent = formatTime(Math.min(display, HALF_DURATION));
+}
+
+document.getElementById('timer-btn').onclick = () => {
+  if (matchOver) return;
+  timerRunning = !timerRunning;
+  const btn = document.getElementById('timer-btn');
+  if (timerRunning) {
+    btn.textContent = 'Pause';
+    btn.classList.add('green');
+    intervalId = setInterval(tick, 1000);
+  } else {
+    btn.textContent = 'Resume';
+    btn.classList.remove('green');
+    clearInterval(intervalId);
+  }
+};
+
+document.getElementById('half-btn').onclick = () => {
+  if (half === 1) {
+    timerRunning = false;
+    clearInterval(intervalId);
+    document.getElementById('timer-btn').textContent = 'Resume';
+    document.getElementById('timer-btn').classList.remove('green');
+    document.getElementById('halftime-overlay').classList.add('visible');
+  } else {
+    // End match early
+    timerRunning = false;
+    clearInterval(intervalId);
+    matchOver = true;
+    document.getElementById('timer-btn').textContent = 'Start';
+    document.getElementById('timer-btn').disabled = true;
+    document.getElementById('half-btn').disabled = true;
+    document.getElementById('full-time-banner').style.display = 'block';
+    document.getElementById('fulltime-overlay').classList.add('visible');
+  }
+};
+
+document.getElementById('start-second-btn').onclick = () => {
+  document.getElementById('halftime-overlay').classList.remove('visible');
+  half = 2;
+  halfStartOffset = matchSeconds;
+  document.getElementById('half-label').textContent = '2nd Half';
+  document.getElementById('half-btn').textContent = 'Full Time';
+  timerRunning = true;
+  const btn = document.getElementById('timer-btn');
+  btn.textContent = 'Pause';
+  btn.classList.add('green');
+  intervalId = setInterval(tick, 1000);
+};
+
+document.getElementById('stay-halftime-btn').onclick = () => {
+  document.getElementById('halftime-overlay').classList.remove('visible');
+};
+
+document.getElementById('new-match-btn').onclick = () => {
+  location.reload();
+};
+
+// ─── Match Render ─────────────────────────────────────────────────────────────
+
+function renderMatch() {
+  renderPlayerLists();
+  updateClock();
+  document.getElementById('pitch-count').textContent = `(${players.filter(p=>p.onPitch).length})`;
+  document.getElementById('bench-count').textContent  = `(${players.filter(p=>!p.onPitch).length})`;
+}
+
+function renderPlayerLists() {
+  const pitchEl = document.getElementById('pitch-list');
+  const benchEl = document.getElementById('bench-list-match');
+  pitchEl.innerHTML = '';
+  benchEl.innerHTML = '';
+
+  const onPitch = players.filter(p => p.onPitch).sort((a,b) => b.timeOnPitch - a.timeOnPitch);
+  const onBench = players.filter(p => !p.onPitch).sort((a,b) => b.timeOnPitch - a.timeOnPitch);
+
+  onPitch.forEach(p => pitchEl.appendChild(makeCard(p)));
+  onBench.forEach(p => benchEl.appendChild(makeCard(p)));
+
+  document.getElementById('pitch-count').textContent = `(${onPitch.length})`;
+  document.getElementById('bench-count').textContent  = `(${onBench.length})`;
+}
+
+function renderPlayerTimes() {
+  players.forEach(p => {
+    const el = document.getElementById(`card-time-${p.id}`);
+    if (el) el.textContent = formatTime(p.timeOnPitch);
+  });
+}
+
+function makeCard(player) {
+  const card = document.createElement('div');
+  card.className = `player-card ${player.onPitch ? 'on-pitch' : 'on-bench'}`;
+  card.id = `card-${player.id}`;
+
+  if (player.id === pendingOff || stagedOffIds().includes(player.id)) card.classList.add('selected-off');
+  if (stagedOnIds().includes(player.id)) card.classList.add('selected-on');
+
+  card.innerHTML = `
+    <span class="player-name">${escHtml(player.name)}</span>
+    <span class="time-played" id="card-time-${player.id}">${formatTime(player.timeOnPitch)}</span>
+  `;
+
+  card.onclick = () => selectPlayer(player.id);
+  return card;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Substitution Logic ───────────────────────────────────────────────────────
+
+function stagedOffIds() { return stagedSubs.map(s => s.offId); }
+function stagedOnIds()  { return stagedSubs.map(s => s.onId); }
+
+function selectPlayer(id) {
+  if (matchOver) return;
+  const player = players.find(p => p.id === id);
+
+  if (player.onPitch) {
+    // Toggle pending off
+    if (pendingOff === id) {
+      pendingOff = null;
+    } else if (stagedOffIds().includes(id)) {
+      // already staged — ignore
+    } else {
+      pendingOff = id;
+    }
+  } else {
+    // Bench player tapped
+    if (stagedOnIds().includes(id)) {
+      // already staged — ignore
+    } else if (pendingOff !== null) {
+      // Pair them
+      stagedSubs.push({ offId: pendingOff, onId: id });
+      pendingOff = null;
+    } else {
+      // No pending off — pick the most-played on-pitch player not yet staged as a shortcut?
+      // Just show a hint instead
+    }
+  }
+
+  updateSubBar();
+  renderPlayerLists();
+}
+
+function updateSubBar() {
+  const bar         = document.getElementById('sub-bar');
+  const stagedEl    = document.getElementById('staged-pairs');
+  const hintEl      = document.getElementById('pending-hint');
+  const confirmBtn  = document.getElementById('confirm-sub-btn');
+
+  const hasAnything = stagedSubs.length > 0 || pendingOff !== null;
+  bar.classList.toggle('visible', hasAnything);
+
+  // Staged pairs
+  stagedEl.innerHTML = stagedSubs.map((s, i) => {
+    const on  = players.find(p => p.id === s.onId);
+    const off = players.find(p => p.id === s.offId);
+    return `<div class="staged-pair">
+      <span class="pair-on">↑ ${escHtml(on.name)}</span>
+      <span class="pair-arrow">/</span>
+      <span class="pair-off">↓ ${escHtml(off.name)}</span>
+      <button class="pair-remove" onclick="removeStagedPair(${i})">✕</button>
+    </div>`;
+  }).join('');
+
+  // Pending hint
+  if (pendingOff !== null) {
+    const off = players.find(p => p.id === pendingOff);
+    hintEl.style.display = 'block';
+    hintEl.textContent = `↓ ${off.name} coming off — now tap a bench player`;
+  } else {
+    hintEl.style.display = 'none';
+  }
+
+  confirmBtn.disabled = stagedSubs.length === 0;
+}
+
+function removeStagedPair(index) {
+  stagedSubs.splice(index, 1);
+  updateSubBar();
+  renderPlayerLists();
+}
+
+document.getElementById('cancel-sub-btn').onclick = () => {
+  pendingOff = null;
+  stagedSubs = [];
+  updateSubBar();
+  renderPlayerLists();
+};
+
+document.getElementById('confirm-sub-btn').onclick = () => {
+  if (stagedSubs.length === 0) return;
+  const minute = Math.floor(halfElapsed() / 60) + (half === 2 ? 40 : 0);
+
+  stagedSubs.forEach(({ offId, onId }) => {
+    const off = players.find(p => p.id === offId);
+    const on  = players.find(p => p.id === onId);
+    off.onPitch = false;
+    off.lastOnAt = null;
+    off.subCount++;
+    on.onPitch = true;
+    on.lastOnAt = matchSeconds;
+    on.subCount++;
+    subLog.push({ minute, onName: on.name, offName: off.name });
+  });
+
+  renderSubLog();
+  stagedSubs = [];
+  pendingOff = null;
+  updateSubBar();
+  renderPlayerLists();
+};
+
+function renderSubLog() {
+  const logEl = document.getElementById('sub-log');
+  const entries = document.getElementById('sub-log-entries');
+  logEl.style.display = subLog.length ? 'block' : 'none';
+
+  entries.innerHTML = subLog.slice().reverse().map(e => `
+    <div class="sub-log-entry">
+      <span class="log-time">${e.minute}'</span>
+      <span class="log-on">↑ ${escHtml(e.onName)}</span>
+      <span class="log-arrow">/</span>
+      <span class="log-off">↓ ${escHtml(e.offName)}</span>
+    </div>
+  `).join('');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildSetup();
+</script>
+</body>
+</html>
