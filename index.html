@@ -98,6 +98,35 @@
   .zone-count.over  { color: var(--red); }
   .zone-count.some  { color: var(--accent); }
 
+  .gk-slot {
+    border: 1.5px dashed rgba(245,158,11,0.5);
+    border-radius: 8px;
+    padding: 5px 6px;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .gk-slot.drag-over { border-color: var(--accent); background: rgba(245,158,11,0.08); }
+  .gk-slot-empty {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(245,158,11,0.5);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    user-select: none;
+  }
+  .gk-slot .roster-card {
+    width: 100%;
+    margin: 0;
+    background: rgba(245,158,11,0.18);
+    color: var(--accent);
+    border-color: rgba(245,158,11,0.4);
+  }
+
   .zone-cards {
     flex: 1;
     overflow-y: auto;
@@ -413,6 +442,17 @@
   .player-card.on-pitch .time-played { color: var(--green); }
   .player-card.on-bench .time-played { color: var(--muted); }
 
+  .gk-badge {
+    font-size: 9px;
+    font-weight: 800;
+    background: var(--accent);
+    color: #000;
+    border-radius: 4px;
+    padding: 1px 4px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+
   /* Halftime overlay */
   .overlay {
     display: none;
@@ -564,6 +604,9 @@
   <div class="setup-zones">
     <div class="setup-zone" id="zone-pitch" data-zone="pitch">
       <div class="zone-header">Starting 11 <span class="zone-count" id="count-pitch"></span></div>
+      <div class="gk-slot" id="gk-slot" data-zone="gk">
+        <span class="gk-slot-empty" id="gk-slot-empty">GK</span>
+      </div>
       <div class="zone-cards" id="cards-pitch"></div>
     </div>
     <div class="setup-zone" id="zone-bench" data-zone="bench">
@@ -691,6 +734,7 @@ const SQUAD = ['Conrad','Sam','Noah','Arlo','Eoin','Cooper','Hobie','Tom','Harry
 
 // roster: array of { name, group: 'pitch'|'bench'|'absent' }
 let roster = SQUAD.map(name => ({ name, group: 'absent' }));
+let gkName = null;
 
 // ── Drag state ──
 let dragName   = null;
@@ -706,10 +750,24 @@ function buildSetup() {
 }
 
 function renderSetupZones() {
+  // GK slot
+  const gkSlot = document.getElementById('gk-slot');
+  const gkEmpty = document.getElementById('gk-slot-empty');
+  gkSlot.querySelectorAll('.roster-card').forEach(c => c.remove());
+  if (gkName) {
+    gkEmpty.style.display = 'none';
+    const card = makeRosterCard(gkName, 'pitch');
+    card.dataset.fromGk = 'true';
+    gkSlot.appendChild(card);
+  } else {
+    gkEmpty.style.display = '';
+  }
+
+  // Regular zone cards (pitch excludes GK)
   ['pitch','bench','absent'].forEach(group => {
     const container = document.getElementById(`cards-${group}`);
     container.innerHTML = '';
-    roster.filter(p => p.group === group).forEach(p => {
+    roster.filter(p => p.group === group && p.name !== gkName).forEach(p => {
       container.appendChild(makeRosterCard(p.name, group));
     });
   });
@@ -747,6 +805,16 @@ function setupDragDrop() {
       zone.classList.remove('drag-over');
       if (dragName) dropIntoZone(zone.dataset.zone);
     });
+  });
+
+  // GK slot drag-and-drop (desktop)
+  const gkSlot = document.getElementById('gk-slot');
+  gkSlot.addEventListener('dragover', e => { e.preventDefault(); gkSlot.classList.add('drag-over'); });
+  gkSlot.addEventListener('dragleave', () => gkSlot.classList.remove('drag-over'));
+  gkSlot.addEventListener('drop', e => {
+    e.preventDefault();
+    gkSlot.classList.remove('drag-over');
+    if (dragName) dropIntoZone('gk');
   });
 
   attachCardListeners();
@@ -799,8 +867,8 @@ function onTouchMove(e) {
   dragGhostEl.style.display = 'none';
   const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
   dragGhostEl.style.display = '';
-  document.querySelectorAll('.setup-zone').forEach(z => z.classList.remove('drag-over'));
-  const zone = el?.closest('.setup-zone');
+  document.querySelectorAll('.setup-zone, .gk-slot').forEach(z => z.classList.remove('drag-over'));
+  const zone = el?.closest('.gk-slot') || el?.closest('.setup-zone');
   if (zone) zone.classList.add('drag-over');
 }
 
@@ -811,9 +879,9 @@ function onTouchEnd(e) {
 
   const touch = e.changedTouches[0];
   const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  document.querySelectorAll('.setup-zone').forEach(z => z.classList.remove('drag-over'));
-  const zone = el?.closest('.setup-zone');
-  if (zone && dragName) dropIntoZone(zone.dataset.zone);
+  document.querySelectorAll('.setup-zone, .gk-slot').forEach(z => z.classList.remove('drag-over'));
+  const zone = el?.closest('.gk-slot') || el?.closest('.setup-zone');
+  if (zone && dragName) dropIntoZone(zone.dataset.zone || 'gk');
 
   dragName = null;
   dragSourceCard = null;
@@ -827,11 +895,21 @@ function positionGhost(touch) {
 
 function dropIntoZone(group) {
   const player = roster.find(p => p.name === dragName);
-  if (player) {
+  if (!player) return;
+
+  // If dragging the current GK away from the GK slot, clear GK
+  if (dragName === gkName && group !== 'gk') gkName = null;
+
+  if (group === 'gk') {
+    // Clear previous GK designation
+    gkName = dragName;
+    player.group = 'pitch';
+  } else {
     player.group = group;
-    renderSetupZones();
-    attachCardListeners();
   }
+
+  renderSetupZones();
+  attachCardListeners();
 }
 
 document.getElementById('start-btn').onclick = () => {
@@ -850,10 +928,11 @@ document.getElementById('start-btn').onclick = () => {
   players = allNames.map((name, i) => ({
     id: i,
     name,
-    onPitch: i < 11,
+    isGK: name === gkName,
+    onPitch: i < starters.length,
     timeOnPitch: 0,
     subCount: 0,
-    lastOnAt: i < 11 ? 0 : null,
+    lastOnAt: i < starters.length ? 0 : null,
   }));
 
   document.getElementById('setup-screen').style.display = 'none';
@@ -1042,6 +1121,7 @@ function makeCard(player) {
   if (stagedOnIds().includes(player.id)) card.classList.add('selected-on');
 
   card.innerHTML = `
+    ${player.isGK ? '<span class="gk-badge">GK</span>' : ''}
     <span class="player-name">${escHtml(player.name)}</span>
     <span class="time-played" id="card-time-${player.id}">${formatTime(player.timeOnPitch)}</span>
   `;
