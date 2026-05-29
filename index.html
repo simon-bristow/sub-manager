@@ -295,7 +295,7 @@
   .lists {
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 5fr 4fr 4fr;
     gap: 0;
     overflow: hidden;
     min-height: 0;
@@ -306,11 +306,11 @@
     flex-direction: column;
     overflow: hidden;
     border-right: 1px solid var(--border);
-    padding: 10px 8px 10px 10px;
+    padding: 10px 6px 10px 8px;
   }
   .list-section:last-child {
     border-right: none;
-    padding: 10px 10px 10px 8px;
+    padding: 10px 8px 10px 6px;
   }
 
   .list-header {
@@ -436,40 +436,31 @@
   }
   .overlay-btn.secondary:hover { background: var(--border); }
 
-  /* Sub log */
-  .sub-log {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 0 16px;
+  /* Sub log column */
+  .sub-log-entries {
+    flex: 1;
     overflow-y: auto;
-    max-height: 160px;
-    flex-shrink: 0;
-  }
-  .sub-log-header {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 10px 0 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
   .sub-log-entry {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 7px 8px;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 0;
-    border-top: 1px solid var(--border);
-    font-size: 13px;
+    flex-direction: column;
+    gap: 3px;
+    flex-shrink: 0;
   }
   .log-time {
+    font-size: 10px;
     font-variant-numeric: tabular-nums;
     color: var(--accent);
     font-weight: 700;
-    min-width: 38px;
   }
-  .log-arrow { color: var(--muted); }
-  .log-on { color: var(--green); font-weight: 600; }
-  .log-off { color: var(--red); font-weight: 600; }
+  .log-on  { font-size: 11px; color: var(--green); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-off { font-size: 11px; color: var(--red);   font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .full-time-banner {
     background: var(--accent);
@@ -545,11 +536,14 @@
       </div>
       <div class="player-cards" id="bench-list-match"></div>
     </div>
-  </div>
 
-  <div class="sub-log" id="sub-log" style="display:none">
-    <div class="sub-log-header">Substitutions</div>
-    <div id="sub-log-entries"></div>
+    <div class="list-section">
+      <div class="list-header">
+        <span class="list-title">Subs</span>
+        <span class="list-count" id="sub-count"></span>
+      </div>
+      <div class="sub-log-entries" id="sub-log-entries"></div>
+    </div>
   </div>
 </div>
 
@@ -942,15 +936,13 @@ document.getElementById('confirm-sub-btn').onclick = () => {
 };
 
 function renderSubLog() {
-  const logEl = document.getElementById('sub-log');
   const entries = document.getElementById('sub-log-entries');
-  logEl.style.display = subLog.length ? 'block' : 'none';
-
+  const count   = document.getElementById('sub-count');
+  count.textContent = subLog.length ? `(${subLog.length})` : '';
   entries.innerHTML = subLog.slice().reverse().map(e => `
     <div class="sub-log-entry">
       <span class="log-time">${e.minute}'</span>
       <span class="log-on">↑ ${escHtml(e.onName)}</span>
-      <span class="log-arrow">/</span>
       <span class="log-off">↓ ${escHtml(e.offName)}</span>
     </div>
   `).join('');
