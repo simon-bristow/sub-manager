@@ -505,6 +505,7 @@
     <div class="timer-controls">
       <button class="ctrl-btn green" id="timer-btn">Start</button>
       <button class="ctrl-btn" id="half-btn">Half Time</button>
+      <button class="ctrl-btn" id="reset-btn">Reset</button>
     </div>
   </div>
 
@@ -544,6 +545,16 @@
       </div>
       <div class="sub-log-entries" id="sub-log-entries"></div>
     </div>
+  </div>
+</div>
+
+<!-- Reset confirmation overlay -->
+<div class="overlay" id="reset-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Reset match?</div>
+    <div class="overlay-sub">This will stop the game and return to the team setup screen.</div>
+    <button class="overlay-btn" style="background:var(--red)" id="confirm-reset-btn">Yes, reset</button>
+    <button class="overlay-btn secondary" id="cancel-reset-btn">Cancel</button>
   </div>
 </div>
 
@@ -774,6 +785,16 @@ document.getElementById('stay-halftime-btn').onclick = () => {
 };
 
 document.getElementById('new-match-btn').onclick = () => {
+  location.reload();
+};
+
+document.getElementById('reset-btn').onclick = () => {
+  document.getElementById('reset-overlay').classList.add('visible');
+};
+document.getElementById('cancel-reset-btn').onclick = () => {
+  document.getElementById('reset-overlay').classList.remove('visible');
+};
+document.getElementById('confirm-reset-btn').onclick = () => {
   location.reload();
 };
 
