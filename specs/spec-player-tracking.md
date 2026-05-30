@@ -75,6 +75,16 @@ See [spec-substitutions.md](spec-substitutions.md) for full substitution interac
 
 ---
 
+## Changing the Goalkeeper Mid-Match
+
+- **Long-press** (600ms hold) on any player card opens a "Change Goalkeeper?" confirmation popup
+- The popup shows: *"Change GK from [current GK] to [long-pressed player]?"*
+- If no GK is currently set: *"Assign [player] as goalkeeper?"*
+- Long-pressing the current GK does nothing (they are already GK)
+- Tapping **Yes, change GK** transfers the GK badge to the new player and updates all cards
+- Tapping **Cancel** closes the popup with no change
+- A regular tap on the card still performs normal substitution selection
+
 ## Header
 
 The match screen header (sticky, always visible) shows:
