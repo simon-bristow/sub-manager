@@ -335,8 +335,23 @@
     border: 2px solid transparent;
     transition: border-color 0.15s, background 0.15s;
   }
-  .rec-row:hover   { border-color: var(--accent); }
-  .rec-row.staged  { border-color: var(--green); background: rgba(34,197,94,0.08); cursor: default; }
+  .rec-row:hover    { border-color: rgba(245,158,11,0.4); }
+  .rec-row.selected { border-color: var(--accent); background: rgba(245,158,11,0.1); }
+  .rec-row.already  { opacity: 0.45; cursor: not-allowed; }
+  .rec-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .rec-row.selected .rec-check { background: var(--accent); border-color: var(--accent); color: #000; }
+  .rec-row.already  .rec-check { background: var(--green);  border-color: var(--green);  color: #fff; }
   .rec-off { flex: 1; }
   .rec-on  { flex: 1; text-align: right; }
   .rec-name { font-size: 13px; font-weight: 700; }
@@ -356,7 +371,7 @@
     padding: 12px;
     cursor: pointer;
   }
-  .rec-stage-all-btn {
+  .rec-stage-btn {
     flex: 2;
     background: var(--accent);
     color: #000;
@@ -366,8 +381,9 @@
     font-weight: 700;
     padding: 12px;
     cursor: pointer;
+    transition: opacity 0.15s;
   }
-  .rec-stage-all-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .rec-stage-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
   /* Sub action bar */
   .sub-bar {
@@ -805,7 +821,7 @@
     <div class="rec-rows" id="rec-rows"></div>
     <div class="rec-actions">
       <button class="rec-close-btn" id="rec-close-btn">Close</button>
-      <button class="rec-stage-all-btn" id="rec-stage-all-btn">Stage All</button>
+      <button class="rec-stage-btn" id="rec-stage-btn" disabled>Stage Selected</button>
     </div>
   </div>
 </div>
@@ -1209,6 +1225,7 @@ document.getElementById('new-match-btn').onclick = () => {
 // ─── Recommendation ──────────────────────────────────────────────────────────
 
 let recSuggestions = []; // [{offId, onId}]
+let recSelected = new Set(); // indices of selected suggestions
 
 document.getElementById('rec-btn').onclick = () => {
   buildRecommendations();
@@ -1217,23 +1234,27 @@ document.getElementById('rec-btn').onclick = () => {
 document.getElementById('rec-close-btn').onclick = () => {
   document.getElementById('rec-overlay').classList.remove('visible');
 };
-document.getElementById('rec-stage-all-btn').onclick = () => {
-  recSuggestions.forEach(s => {
-    const alreadyStaged = stagedSubs.some(x => x.offId === s.offId || x.onId === s.onId);
-    if (!alreadyStaged) stagedSubs.push({ offId: s.offId, onId: s.onId });
+document.getElementById('rec-stage-btn').onclick = () => {
+  recSelected.forEach(i => {
+    const s = recSuggestions[i];
+    const conflict = stagedSubs.some(x => x.offId === s.offId || x.onId === s.onId);
+    if (!conflict) stagedSubs.push({ offId: s.offId, onId: s.onId });
   });
+  recSelected.clear();
   updateSubBar();
   renderPlayerLists();
   document.getElementById('rec-overlay').classList.remove('visible');
 };
 
 function buildRecommendations() {
+  recSelected.clear();
+
   // Off: on-pitch, non-GK, most time first
   const offCandidates = players
     .filter(p => p.onPitch && !p.isGK)
     .sort((a, b) => b.timeOnPitch - a.timeOnPitch);
 
-  // On: bench players, least time first
+  // On: bench players (non-GK), least time first
   const onCandidates = players
     .filter(p => !p.onPitch && !p.isGK)
     .sort((a, b) => a.timeOnPitch - b.timeOnPitch);
@@ -1248,20 +1269,24 @@ function buildRecommendations() {
 }
 
 function renderRecRows() {
-  const rowsEl = document.getElementById('rec-rows');
-  const stageAllBtn = document.getElementById('rec-stage-all-btn');
+  const rowsEl  = document.getElementById('rec-rows');
+  const stageBtn = document.getElementById('rec-stage-btn');
 
   if (recSuggestions.length === 0) {
     rowsEl.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:12px 0">No substitutions available</p>';
-    stageAllBtn.disabled = true;
+    stageBtn.disabled = true;
     return;
   }
 
   rowsEl.innerHTML = recSuggestions.map((s, i) => {
-    const off = players.find(p => p.id === s.offId);
-    const on  = players.find(p => p.id === s.onId);
-    const isStaged = stagedSubs.some(x => x.offId === s.offId && x.onId === s.onId);
-    return `<div class="rec-row ${isStaged ? 'staged' : ''}" onclick="stageRec(${i})">
+    const off     = players.find(p => p.id === s.offId);
+    const on      = players.find(p => p.id === s.onId);
+    const already = stagedSubs.some(x => x.offId === s.offId || x.onId === s.onId);
+    const sel     = recSelected.has(i);
+    const cls     = already ? 'already' : sel ? 'selected' : '';
+    const check   = already ? '✓' : sel ? '✓' : '';
+    return `<div class="rec-row ${cls}" onclick="toggleRec(${i})">
+      <div class="rec-check">${check}</div>
       <div class="rec-off">
         <div class="rec-name">↓ ${escHtml(off.name)}</div>
         <div class="rec-time">${formatTime(off.timeOnPitch)} played</div>
@@ -1274,18 +1299,18 @@ function renderRecRows() {
     </div>`;
   }).join('');
 
-  const allStaged = recSuggestions.every(s => stagedSubs.some(x => x.offId === s.offId && x.onId === s.onId));
-  stageAllBtn.disabled = allStaged;
+  const n = recSelected.size;
+  stageBtn.disabled = n === 0;
+  stageBtn.textContent = n > 0 ? `Stage Selected (${n})` : 'Stage Selected';
 }
 
-function stageRec(index) {
+function toggleRec(index) {
   const s = recSuggestions[index];
-  const alreadyStaged = stagedSubs.some(x => x.offId === s.offId || x.onId === s.onId);
-  if (alreadyStaged) return;
-  stagedSubs.push({ offId: s.offId, onId: s.onId });
-  updateSubBar();
-  renderPlayerLists();
-  renderRecRows(); // refresh tick state
+  const already = stagedSubs.some(x => x.offId === s.offId || x.onId === s.onId);
+  if (already) return;
+  if (recSelected.has(index)) recSelected.delete(index);
+  else recSelected.add(index);
+  renderRecRows();
 }
 
 function renderFullTimeTable() {
