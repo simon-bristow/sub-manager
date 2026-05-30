@@ -40,7 +40,7 @@ The Full Time Summary overlay appears automatically when:
 
 | Column | Description |
 |---|---|
-| Player | Player name |
+| Player | Player name, preceded by an amber **GK** badge if designated goalkeeper |
 | Mins | Cumulative time on pitch in `MM:SS` format |
 | Bar | Proportional green bar; longest-played player = 100% width |
 

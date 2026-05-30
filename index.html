@@ -1121,7 +1121,7 @@ function renderFullTimeTable() {
     const label = `${mins}:${String(secs).padStart(2,'0')}`;
     const pct = Math.round((p.timeOnPitch / max) * 100);
     return `<tr>
-      <td>${escHtml(p.name)}</td>
+      <td>${p.isGK ? '<span class="gk-badge" style="margin-right:5px">GK</span>' : ''}${escHtml(p.name)}</td>
       <td class="ft-mins">${label}</td>
       <td class="ft-bar-cell"><div class="ft-bar-wrap"><div class="ft-bar-fill" style="width:${pct}%"></div></div></td>
     </tr>`;
