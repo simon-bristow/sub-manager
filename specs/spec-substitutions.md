@@ -61,6 +61,24 @@ SUBSTITUTIONS                        [✕]  [Confirm All]
 
 ---
 
+## Suggested Substitutions (★ button)
+
+The **★** button in the match header opens a "Suggested Subs" panel that recommends up to 4 substitution pairs based on playing time fairness.
+
+### Logic
+- **Coming off**: on-pitch players (excluding GK), sorted by most time played
+- **Coming on**: bench players (excluding GK), sorted by least time played
+- Pairs are matched 1-to-1: most-played off ↔ least-played on
+- Maximum of 4 pairs shown (limited by bench availability)
+
+### Panel behaviour
+- Slides up from the bottom of the screen
+- Each row shows: ↓ player off (red, time played) ⇄ ↑ player on (green, time played)
+- Tap a single row to stage that pair into the substitution bar
+- **Stage All** queues all suggested pairs at once
+- Already-staged pairs are highlighted and cannot be tapped again
+- **Close** dismisses the panel without making any changes
+
 ## Constraints
 
 - A player already staged as "coming off" cannot be selected again
