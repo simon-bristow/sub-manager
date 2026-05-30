@@ -1,0 +1,80 @@
+# Sub Manager — App Specification
+
+## Overview
+
+Sub Manager is a mobile-first web application designed to help a soccer coach manage player substitutions during a match. The primary goal is to ensure fair playing time across the squad by making it easy to track who is on the pitch, who is on the bench, and how long each player has been playing.
+
+The app runs entirely in the browser with no backend or login required. All state is held in memory for the duration of a single match session.
+
+---
+
+## Target User
+
+- A youth or amateur soccer coach
+- Operating on the sideline during a live match
+- Using a smartphone (primary), with no time to navigate complex UIs
+
+---
+
+## Key Constraints
+
+- **Phone-first**: All interactions must be comfortable on a 375px-wide touchscreen
+- **No persistence**: Each session starts fresh; no data is saved between matches
+- **No backend**: Single static HTML file, deployable to GitHub Pages
+- **Offline-capable**: All assets (including logo) embedded directly in the file
+
+---
+
+## Match Format
+
+- Two 40-minute halves (80 minutes total)
+- Unlimited substitutions
+- Default squad of 17 named players; fill-in players can be added at setup time
+- Players assigned to Absent are excluded from the match entirely
+- Fewer than 11 starters is permitted (e.g. reduced-size games)
+- One player can be designated as **Goalkeeper** (GK) via a dedicated slot in setup
+
+---
+
+## App Flow
+
+```
+Squad Setup  →  Match (1st Half)  →  Half Time  →  Match (2nd Half)  →  Full Time Summary
+     ↑                                                                          |
+     └──────────────────────── Reset (at any point) ────────────────────────────┘
+```
+
+---
+
+## Screen Summary
+
+| Screen | Purpose |
+|---|---|
+| Squad Setup | Assign players to Starting, Bench, or Absent via drag-and-drop |
+| Match Screen | Live view of pitch/bench/subs with timer and substitution controls |
+| Half Time Overlay | Pause between halves; prompt to start 2nd half |
+| Full Time Overlay | End-of-match summary with minutes played per player |
+| Reset Confirmation | Confirm before discarding the current match |
+
+---
+
+## Sub-Specifications
+
+| Feature | Spec File |
+|---|---|
+| Squad Setup | [spec-squad-setup.md](spec-squad-setup.md) |
+| Match Timer | [spec-match-timer.md](spec-match-timer.md) |
+| Player Tracking | [spec-player-tracking.md](spec-player-tracking.md) |
+| Substitutions | [spec-substitutions.md](spec-substitutions.md) |
+| Full Time Summary | [spec-fulltime-summary.md](spec-fulltime-summary.md) |
+
+---
+
+## Out of Scope
+
+- Saving match history or rosters across sessions
+- Player position tracking beyond GK designation (e.g. defender, forward)
+- Score tracking
+- Suggested substitutions based on playing time
+- Multiple teams or users
+- Push notifications or reminders
