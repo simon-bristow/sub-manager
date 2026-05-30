@@ -809,10 +809,11 @@ function setupDragDrop() {
 
   // GK slot drag-and-drop (desktop)
   const gkSlot = document.getElementById('gk-slot');
-  gkSlot.addEventListener('dragover', e => { e.preventDefault(); gkSlot.classList.add('drag-over'); });
-  gkSlot.addEventListener('dragleave', () => gkSlot.classList.remove('drag-over'));
+  gkSlot.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); gkSlot.classList.add('drag-over'); });
+  gkSlot.addEventListener('dragleave', e => { if (!gkSlot.contains(e.relatedTarget)) gkSlot.classList.remove('drag-over'); });
   gkSlot.addEventListener('drop', e => {
     e.preventDefault();
+    e.stopPropagation();
     gkSlot.classList.remove('drag-over');
     if (dragName) dropIntoZone('gk');
   });
