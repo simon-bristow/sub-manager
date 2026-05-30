@@ -189,6 +189,38 @@
   .start-btn:hover { background: var(--green-dark); }
   .start-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
 
+  .add-player-row {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .new-player-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .new-player-input:focus { border-color: var(--green); }
+  .new-player-input::placeholder { color: var(--muted); }
+  .new-player-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: 700;
+    width: 44px;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .new-player-btn:hover { background: var(--green-dark); }
+
   .error-msg {
     color: var(--red);
     font-size: 13px;
@@ -619,6 +651,11 @@
     </div>
   </div>
 
+  <div class="add-player-row">
+    <input id="new-player-input" class="new-player-input" type="text" placeholder="Add fill-in player…" maxlength="20">
+    <button id="new-player-btn" class="new-player-btn">+</button>
+  </div>
+
   <p id="setup-error" class="error-msg"></p>
   <button class="start-btn" id="start-btn">Start Match</button>
 </div>
@@ -912,6 +949,26 @@ function dropIntoZone(group) {
   renderSetupZones();
   attachCardListeners();
 }
+
+function addFillInPlayer() {
+  const input = document.getElementById('new-player-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (roster.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    document.getElementById('setup-error').textContent = `"${name}" is already in the squad.`;
+    return;
+  }
+  document.getElementById('setup-error').textContent = '';
+  roster.push({ name, group: 'absent' });
+  input.value = '';
+  renderSetupZones();
+  attachCardListeners();
+}
+
+document.getElementById('new-player-btn').onclick = addFillInPlayer;
+document.getElementById('new-player-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addFillInPlayer();
+});
 
 document.getElementById('start-btn').onclick = () => {
   const error = document.getElementById('setup-error');
