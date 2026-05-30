@@ -73,11 +73,12 @@ The **★** button in the match header opens a "Suggested Subs" panel that recom
 
 ### Panel behaviour
 - Slides up from the bottom of the screen
-- Each row shows: ↓ player off (red, time played) ⇄ ↑ player on (green, time played)
-- Tap a single row to stage that pair into the substitution bar
-- **Stage All** queues all suggested pairs at once
-- Already-staged pairs are highlighted and cannot be tapped again
-- **Close** dismisses the panel without making any changes
+- Each row shows: a checkbox circle · ↓ player off (red, time played) ⇄ ↑ player on (green, time played)
+- Rows start **unselected** — tap a row to select it (amber tick + border); tap again to deselect
+- Already-staged pairs are faded and non-tappable (shown with a green tick)
+- **Stage Selected (N)** button is disabled until at least one row is selected; shows the count of selected rows
+- Tapping **Stage Selected** adds only the selected pairs to the substitution staging bar, clears the selection, and closes the panel
+- **Close** dismisses the panel without staging anything; selection is discarded
 
 ## Constraints
 
