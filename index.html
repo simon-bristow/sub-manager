@@ -950,6 +950,8 @@ let matchSeconds = 0;
 let half = 1;       // 1 or 2
 let halfStartOffset = 0; // seconds at which current half started in matchSeconds
 let intervalId = null;
+let timerStartedAt = null;    // Date.now() when timer last started/resumed
+let secondsAtLastStart = 0;   // matchSeconds value when timer last started/resumed
 let subLog = [];    // { minute, on, off }
 let pendingOff = null;   // pitch player tapped, waiting for bench pick
 let stagedSubs = [];    // [{offId, onId}] confirmed pairs waiting for "Confirm All"
@@ -1202,18 +1204,26 @@ function halfElapsed() {
 
 function tick() {
   if (!timerRunning || matchOver) return;
-  matchSeconds++;
 
-  // Update time for pitching players
+  // Use wall-clock time so the timer survives phone sleep/standby
+  const wallElapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+  const newMatchSeconds = secondsAtLastStart + wallElapsed;
+  const delta = newMatchSeconds - matchSeconds;
+  if (delta <= 0) return;
+
+  // Accumulate player on-pitch time by the real delta (catches up after sleep)
   players.forEach(p => {
-    if (p.onPitch) p.timeOnPitch++;
+    if (p.onPitch) p.timeOnPitch += delta;
   });
+
+  const prevSort = Math.floor(matchSeconds / 60);
+  matchSeconds = newMatchSeconds;
 
   updateClock();
   renderPlayerTimes();
 
-  // Re-sort cards every 60 seconds so order stays accurate
-  if (matchSeconds % 60 === 0) renderPlayerLists();
+  // Re-sort cards every ~60 seconds so order stays accurate
+  if (Math.floor(matchSeconds / 60) > prevSort) renderPlayerLists();
 
   const elapsed = halfElapsed();
 
@@ -1252,6 +1262,8 @@ document.getElementById('timer-btn').onclick = () => {
   if (timerRunning) {
     btn.textContent = '⏸';
     btn.classList.add('green');
+    timerStartedAt = Date.now();
+    secondsAtLastStart = matchSeconds;
     intervalId = setInterval(tick, 1000);
   } else {
     btn.textContent = '▶';
@@ -1291,6 +1303,8 @@ document.getElementById('start-second-btn').onclick = () => {
   const btn = document.getElementById('timer-btn');
   btn.textContent = '⏸';
   btn.classList.add('green');
+  timerStartedAt = Date.now();
+  secondsAtLastStart = matchSeconds;
   intervalId = setInterval(tick, 1000);
 };
 
@@ -1651,6 +1665,16 @@ function renderSubLog() {
     </div>
   `).join('');
 }
+
+// ─── Wake-up sync (Page Visibility API) ──────────────────────────────────────
+// When the phone wakes from sleep, the interval has been paused.
+// visibilitychange fires immediately — we call tick() to catch up using
+// the wall-clock delta, so the timer and player times are correct at once.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && timerRunning && !matchOver) {
+    tick();
+  }
+});
 
 // ─── About ───────────────────────────────────────────────────────────────────
 
