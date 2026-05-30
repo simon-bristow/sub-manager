@@ -827,6 +827,16 @@
 </div>
 
 <!-- Reset confirmation overlay -->
+<!-- GK change overlay -->
+<div class="overlay" id="gk-change-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Change Goalkeeper?</div>
+    <div class="overlay-sub" id="gk-change-sub"></div>
+    <button class="overlay-btn" id="gk-change-confirm-btn">Yes, change GK</button>
+    <button class="overlay-btn secondary" id="gk-change-cancel-btn">Cancel</button>
+  </div>
+</div>
+
 <div class="overlay" id="reset-overlay">
   <div class="overlay-card">
     <div class="overlay-title">Reset match?</div>
@@ -1339,6 +1349,37 @@ document.getElementById('confirm-reset-btn').onclick = () => {
   location.reload();
 };
 
+// ─── GK Change ───────────────────────────────────────────────────────────────
+
+let gkChangePlayerId = null;
+
+function openGkChange(playerId) {
+  const player = players.find(p => p.id === playerId);
+  if (!player || player.isGK) return; // already GK — nothing to do
+  gkChangePlayerId = playerId;
+  const currentGk = players.find(p => p.isGK);
+  const sub = currentGk
+    ? `Change GK from <strong>${escHtml(currentGk.name)}</strong> to <strong>${escHtml(player.name)}</strong>?`
+    : `Assign <strong>${escHtml(player.name)}</strong> as goalkeeper?`;
+  document.getElementById('gk-change-sub').innerHTML = sub;
+  document.getElementById('gk-change-overlay').classList.add('visible');
+}
+
+document.getElementById('gk-change-cancel-btn').onclick = () => {
+  document.getElementById('gk-change-overlay').classList.remove('visible');
+  gkChangePlayerId = null;
+};
+
+document.getElementById('gk-change-confirm-btn').onclick = () => {
+  if (gkChangePlayerId !== null) {
+    players.forEach(p => p.isGK = false);
+    players.find(p => p.id === gkChangePlayerId).isGK = true;
+    gkChangePlayerId = null;
+  }
+  document.getElementById('gk-change-overlay').classList.remove('visible');
+  renderPlayerLists();
+};
+
 // ─── Match Render ─────────────────────────────────────────────────────────────
 
 function renderMatch() {
@@ -1385,7 +1426,29 @@ function makeCard(player) {
     <span class="time-played" id="card-time-${player.id}">${formatTime(player.timeOnPitch)}</span>
   `;
 
-  card.onclick = () => selectPlayer(player.id);
+  // Long-press to change GK
+  let longPressTimer = null;
+  let longPressFired = false;
+  const startLongPress = () => {
+    longPressFired = false;
+    longPressTimer = setTimeout(() => {
+      longPressFired = true;
+      longPressTimer = null;
+      openGkChange(player.id);
+    }, 600);
+  };
+  const cancelLongPress = () => { clearTimeout(longPressTimer); longPressTimer = null; };
+
+  card.onclick = () => { if (!longPressFired) selectPlayer(player.id); longPressFired = false; };
+
+  card.addEventListener('touchstart',  startLongPress,  { passive: true });
+  card.addEventListener('touchend',    cancelLongPress);
+  card.addEventListener('touchcancel', cancelLongPress);
+  card.addEventListener('touchmove',   cancelLongPress);
+  card.addEventListener('mousedown',   startLongPress);
+  card.addEventListener('mouseup',     cancelLongPress);
+  card.addEventListener('mouseleave',  cancelLongPress);
+
   return card;
 }
 
