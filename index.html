@@ -955,7 +955,7 @@ let intervalId = null;
 let timerStartedAt = null;    // Date.now() when timer last started/resumed
 let secondsAtLastStart = 0;   // matchSeconds value when timer last started/resumed
 let subLog = [];    // { minute, on, off }
-let pendingOff = null;   // pitch player tapped, waiting for bench pick
+let pendingOn = null;   // bench player tapped, waiting for pitch player pick
 let stagedSubs = [];    // [{offId, onId}] confirmed pairs waiting for "Confirm All"
 let matchOver = false;
 
@@ -1514,8 +1514,8 @@ function makeCard(player) {
   card.className = `player-card ${player.onPitch ? 'on-pitch' : 'on-bench'}`;
   card.id = `card-${player.id}`;
 
-  if (player.id === pendingOff || stagedOffIds().includes(player.id)) card.classList.add('selected-off');
-  if (stagedOnIds().includes(player.id)) card.classList.add('selected-on');
+  if (stagedOffIds().includes(player.id)) card.classList.add('selected-off');
+  if (player.id === pendingOn || stagedOnIds().includes(player.id)) card.classList.add('selected-on');
 
   card.innerHTML = `
     ${player.isGK ? '<span class="gk-badge">GK</span>' : ''}
@@ -1562,27 +1562,24 @@ function selectPlayer(id) {
   if (matchOver) return;
   const player = players.find(p => p.id === id);
 
-  if (player.onPitch) {
-    // Toggle pending off
-    if (pendingOff === id) {
-      pendingOff = null;
-    } else if (stagedOffIds().includes(id)) {
-      // already staged — ignore
-    } else {
-      pendingOff = id;
-    }
-  } else {
-    // Bench player tapped
+  if (!player.onPitch) {
+    // Bench player tapped — select as "coming on"
     if (stagedOnIds().includes(id)) {
       // already staged — ignore
-    } else if (pendingOff !== null) {
-      // Pair them
-      stagedSubs.push({ offId: pendingOff, onId: id });
-      pendingOff = null;
+    } else if (pendingOn === id) {
+      pendingOn = null; // deselect
     } else {
-      // No pending off — pick the most-played on-pitch player not yet staged as a shortcut?
-      // Just show a hint instead
+      pendingOn = id;
     }
+  } else {
+    // Pitch player tapped — complete the pair if a bench player is pending
+    if (stagedOffIds().includes(id)) {
+      // already staged — ignore
+    } else if (pendingOn !== null) {
+      stagedSubs.push({ offId: id, onId: pendingOn });
+      pendingOn = null;
+    }
+    // No pending bench player — do nothing (wait for bench tap first)
   }
 
   updateSubBar();
@@ -1595,7 +1592,7 @@ function updateSubBar() {
   const hintEl      = document.getElementById('pending-hint');
   const confirmBtn  = document.getElementById('confirm-sub-btn');
 
-  const hasAnything = stagedSubs.length > 0 || pendingOff !== null;
+  const hasAnything = stagedSubs.length > 0 || pendingOn !== null;
   bar.classList.toggle('visible', hasAnything);
 
   // Staged pairs
@@ -1611,10 +1608,10 @@ function updateSubBar() {
   }).join('');
 
   // Pending hint
-  if (pendingOff !== null) {
-    const off = players.find(p => p.id === pendingOff);
+  if (pendingOn !== null) {
+    const on = players.find(p => p.id === pendingOn);
     hintEl.style.display = 'block';
-    hintEl.textContent = `↓ ${off.name} coming off — now tap a bench player`;
+    hintEl.textContent = `↑ ${on.name} coming on — now tap a pitch player to swap`;
   } else {
     hintEl.style.display = 'none';
   }
@@ -1629,7 +1626,7 @@ function removeStagedPair(index) {
 }
 
 document.getElementById('cancel-sub-btn').onclick = () => {
-  pendingOff = null;
+  pendingOn = null;
   stagedSubs = [];
   updateSubBar();
   renderPlayerLists();
@@ -1655,7 +1652,7 @@ document.getElementById('confirm-sub-btn').onclick = () => {
 
   renderSubLog();
   stagedSubs = [];
-  pendingOff = null;
+  pendingOn = null;
   updateSubBar();
   renderPlayerLists();
 };
