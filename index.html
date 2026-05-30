@@ -82,6 +82,8 @@
   }
   .setup-zone:last-child { border-right: none; }
   .setup-zone.drag-over { background: rgba(255,255,255,0.04); }
+  .setup-zone.zone-full { background: rgba(34,197,94,0.04); }
+  .setup-zone.zone-full .zone-header { color: var(--green); }
 
   .zone-header {
     font-size: 10px;
@@ -1017,8 +1019,13 @@ function updateZoneCounts() {
   const absentCount = roster.filter(p => p.group === 'absent').length;
 
   const pc = document.getElementById('count-pitch');
-  pc.textContent = pitchCount ? `(${pitchCount})` : '';
-  pc.className = `zone-count ${pitchCount === 11 ? 'full' : pitchCount > 11 ? 'over' : 'some'}`;
+  pc.textContent = `(${pitchCount}/11)`;
+  pc.className = `zone-count ${pitchCount === 11 ? 'full' : 'some'}`;
+
+  // Lock the pitch zone visually when full
+  const pitchZone = document.getElementById('zone-pitch');
+  if (pitchCount >= 11) pitchZone.classList.add('zone-full');
+  else pitchZone.classList.remove('zone-full');
 
   document.getElementById('count-bench').textContent  = benchCount  ? `(${benchCount})` : '';
   document.getElementById('count-absent').textContent = absentCount ? `(${absentCount})` : '';
@@ -1127,11 +1134,17 @@ function dropIntoZone(group) {
   const player = roster.find(p => p.name === dragName);
   if (!player) return;
 
+  // Enforce max 11 in Starting 11 — player already on pitch doesn't count against the limit
+  if (group === 'pitch' || group === 'gk') {
+    const currentPitchCount = roster.filter(p => p.group === 'pitch').length;
+    const isAlreadyOnPitch = player.group === 'pitch';
+    if (!isAlreadyOnPitch && currentPitchCount >= 11) return; // full — ignore drop
+  }
+
   // If dragging the current GK away from the GK slot, clear GK
   if (dragName === gkName && group !== 'gk') gkName = null;
 
   if (group === 'gk') {
-    // Clear previous GK designation
     gkName = dragName;
     player.group = 'pitch';
   } else {
