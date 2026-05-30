@@ -24,6 +24,16 @@ When in doubt, update `appspec.md` as well.
 - Push changes with `git add index.html && git commit -m "..." && git push`
 - Specs live in `specs/` — commit them alongside code changes
 
+## Version Number (IMPORTANT)
+
+**Before every commit**, increment the version number in `index.html` by 0.1.
+
+The version lives in two places — update both:
+1. The `<div id="about-overlay">` card: `<div class="about-version">vX.X</div>`
+2. The commit message suffix: include `; vX.X` at the end
+
+Current version after last commit: **v0.9**. Next commit should use **v1.0**, then **v1.1**, etc.
+
 ## Stack
 
 - Vanilla HTML/CSS/JS, no build step
