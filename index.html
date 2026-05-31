@@ -569,8 +569,7 @@
     flex-shrink: 0;
   }
 
-  .player-card.on-pitch .time-played { color: var(--green); }
-  .player-card.on-bench .time-played { color: var(--muted); }
+  /* time-played colour is set dynamically via fatigueColor() */
 
   .gk-badge {
     font-size: 9px;
@@ -1502,10 +1501,35 @@ function renderPlayerLists() {
   document.getElementById('bench-count').textContent  = `(${onBench.length})`;
 }
 
+// Returns a CSS colour string based on how much of the max time this player has played
+function fatigueColor(timeOnPitch) {
+  const maxTime = Math.max(...players.map(p => p.timeOnPitch), 1);
+  const ratio = timeOnPitch / maxTime; // 0 → 1
+
+  // Interpolate: 0% = muted grey-blue, 50% = amber, 100% = red
+  // Use two-segment HSL blend: 0-0.5 grey→amber, 0.5-1 amber→red
+  let h, s, l;
+  if (ratio < 0.5) {
+    const t = ratio * 2; // 0→1 within first segment
+    h = 210 - t * 170;   // 210 (blue-grey) → 40 (amber)
+    s = 15  + t * 75;    // 15% → 90%
+    l = 60  - t * 10;    // 60% → 50%
+  } else {
+    const t = (ratio - 0.5) * 2; // 0→1 within second segment
+    h = 40  - t * 40;    // 40 (amber) → 0 (red)
+    s = 90;
+    l = 50  - t * 5;     // 50% → 45%
+  }
+  return `hsl(${Math.round(h)},${Math.round(s)}%,${Math.round(l)}%)`;
+}
+
 function renderPlayerTimes() {
   players.forEach(p => {
     const el = document.getElementById(`card-time-${p.id}`);
-    if (el) el.textContent = formatTime(p.timeOnPitch);
+    if (el) {
+      el.textContent = formatTime(p.timeOnPitch);
+      el.style.color = fatigueColor(p.timeOnPitch);
+    }
   });
 }
 
@@ -1520,7 +1544,7 @@ function makeCard(player) {
   card.innerHTML = `
     ${player.isGK ? '<span class="gk-badge">GK</span>' : ''}
     <span class="player-name">${escHtml(player.name)}</span>
-    <span class="time-played" id="card-time-${player.id}">${formatTime(player.timeOnPitch)}</span>
+    <span class="time-played" id="card-time-${player.id}" style="color:${fatigueColor(player.timeOnPitch)}">${formatTime(player.timeOnPitch)}</span>
   `;
 
   // Long-press to change GK
