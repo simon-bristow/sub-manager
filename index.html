@@ -290,8 +290,6 @@
   .ctrl-btn.green { background: var(--green); color: #fff; }
   .ctrl-btn.green:hover { background: var(--green-dark); }
   .ctrl-btn.amber { background: var(--accent); color: #000; }
-  .ctrl-btn.star  { background: var(--accent); color: #000; font-size: 13px; }
-  .ctrl-btn.star:hover { background: #d97706; }
   .ctrl-btn.add   { background: var(--surface2); color: var(--green); font-size: 16px; font-weight: 700; padding: 4px 9px; }
   .ctrl-btn.add:hover { background: var(--border); }
 
@@ -831,9 +829,9 @@
     <div class="timer-controls">
       <button class="ctrl-btn green" id="timer-btn">▶</button>
       <button class="ctrl-btn" id="half-btn">H/T</button>
-      <button class="ctrl-btn star" id="rec-btn" title="Suggest next subs">★</button>
+      <button class="ctrl-btn" id="rec-btn" title="Suggest next subs">🪄</button>
       <button class="ctrl-btn add" id="add-player-btn" title="Add late player">+</button>
-      <button class="ctrl-btn" id="reset-btn">✕</button>
+      <button class="ctrl-btn" id="reset-btn" style="background:var(--red);color:#fff;font-weight:800;">✕</button>
     </div>
   </div>
 
@@ -896,7 +894,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v1.7</div>
+    <div class="about-version">v1.8</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
