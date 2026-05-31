@@ -29,10 +29,10 @@ When in doubt, update `appspec.md` as well.
 **Before every commit**, increment the version number in `index.html` by 0.1.
 
 The version lives in two places — update both:
-1. The `<div id="about-overlay">` card: `<div class="about-version">vX.X</div>`
+1. The `<div id="about-overlay">` card: `<div class="about-version">vX.X</div>` (line ~896 in index.html)
 2. The commit message suffix: include `; vX.X` at the end
 
-Current version after last commit: **v0.9**. Next commit should use **v1.0**, then **v1.1**, etc.
+Current version after last commit: **v1.1**. Next commit should use **v1.2**, then **v1.3**, etc.
 
 ## Stack
 
