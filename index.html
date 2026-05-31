@@ -896,7 +896,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v1.6</div>
+    <div class="about-version">v1.7</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -915,12 +915,13 @@
 </div>
 
 <!-- GK change overlay -->
-<div class="overlay" id="gk-change-overlay">
+<div class="overlay" id="player-options-overlay">
   <div class="overlay-card">
-    <div class="overlay-title">Change Goalkeeper?</div>
-    <div class="overlay-sub" id="gk-change-sub"></div>
-    <button class="overlay-btn" id="gk-change-confirm-btn">Yes, change GK</button>
-    <button class="overlay-btn secondary" id="gk-change-cancel-btn">Cancel</button>
+    <div class="overlay-title" id="player-options-title"></div>
+    <div class="overlay-sub" id="player-options-sub"></div>
+    <button class="overlay-btn" id="switch-gk-btn">Switch to GK</button>
+    <button class="overlay-btn" style="background:var(--red)" id="remove-player-btn">Remove from Game</button>
+    <button class="overlay-btn secondary" id="player-options-cancel-btn">Cancel</button>
   </div>
 </div>
 
@@ -1500,34 +1501,59 @@ function addLatePlayer() {
   renderPlayerLists();
 }
 
-// ─── GK Change ───────────────────────────────────────────────────────────────
+// ─── Player Options (long-press) ─────────────────────────────────────────────
 
-let gkChangePlayerId = null;
+let optionsPlayerId = null;
 
-function openGkChange(playerId) {
+function openPlayerOptions(playerId) {
   const player = players.find(p => p.id === playerId);
-  if (!player || player.isGK) return; // already GK — nothing to do
-  gkChangePlayerId = playerId;
+  if (!player) return;
+  optionsPlayerId = playerId;
+
+  document.getElementById('player-options-title').textContent = player.name;
+
+  // GK sub-text
   const currentGk = players.find(p => p.isGK);
-  const sub = currentGk
-    ? `Change GK from <strong>${escHtml(currentGk.name)}</strong> to <strong>${escHtml(player.name)}</strong>?`
-    : `Assign <strong>${escHtml(player.name)}</strong> as goalkeeper?`;
-  document.getElementById('gk-change-sub').innerHTML = sub;
-  document.getElementById('gk-change-overlay').classList.add('visible');
+  const gkBtn = document.getElementById('switch-gk-btn');
+  if (player.isGK) {
+    gkBtn.style.display = 'none';
+    document.getElementById('player-options-sub').textContent = 'This player is the current GK.';
+  } else {
+    gkBtn.style.display = 'block';
+    document.getElementById('player-options-sub').innerHTML = currentGk
+      ? `Current GK: <strong>${escHtml(currentGk.name)}</strong>`
+      : 'No GK assigned.';
+  }
+
+  document.getElementById('player-options-overlay').classList.add('visible');
 }
 
-document.getElementById('gk-change-cancel-btn').onclick = () => {
-  document.getElementById('gk-change-overlay').classList.remove('visible');
-  gkChangePlayerId = null;
+function closePlayerOptions() {
+  document.getElementById('player-options-overlay').classList.remove('visible');
+  optionsPlayerId = null;
+}
+
+document.getElementById('player-options-cancel-btn').onclick = closePlayerOptions;
+
+document.getElementById('switch-gk-btn').onclick = () => {
+  if (optionsPlayerId !== null) {
+    players.forEach(p => p.isGK = false);
+    players.find(p => p.id === optionsPlayerId).isGK = true;
+  }
+  closePlayerOptions();
+  renderPlayerLists();
 };
 
-document.getElementById('gk-change-confirm-btn').onclick = () => {
-  if (gkChangePlayerId !== null) {
-    players.forEach(p => p.isGK = false);
-    players.find(p => p.id === gkChangePlayerId).isGK = true;
-    gkChangePlayerId = null;
+document.getElementById('remove-player-btn').onclick = () => {
+  if (optionsPlayerId !== null) {
+    // Remove from staged subs if present
+    stagedSubs = stagedSubs.filter(s => s.offId !== optionsPlayerId && s.onId !== optionsPlayerId);
+    if (pendingOn === optionsPlayerId) pendingOn = null;
+    // Remove from players array
+    players = players.filter(p => p.id !== optionsPlayerId);
   }
-  document.getElementById('gk-change-overlay').classList.remove('visible');
+  closePlayerOptions();
+  updateSubBar();
   renderPlayerLists();
 };
 
@@ -1609,7 +1635,7 @@ function makeCard(player) {
     longPressTimer = setTimeout(() => {
       longPressFired = true;
       longPressTimer = null;
-      openGkChange(player.id);
+      openPlayerOptions(player.id);
     }, 600);
   };
   const cancelLongPress = () => { clearTimeout(longPressTimer); longPressTimer = null; };
