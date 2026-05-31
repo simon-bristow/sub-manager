@@ -237,10 +237,10 @@
   .match-header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 12px 16px;
+    padding: 7px 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     justify-content: space-between;
     position: sticky;
     top: 0;
@@ -248,14 +248,14 @@
   }
 
   .team-logo {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
     flex-shrink: 0;
   }
 
   .half-indicator {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
@@ -263,7 +263,7 @@
   }
 
   .clock {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
@@ -271,17 +271,17 @@
 
   .timer-controls {
     display: flex;
-    gap: 8px;
+    gap: 5px;
   }
 
   .ctrl-btn {
     background: var(--surface2);
     border: none;
-    border-radius: 7px;
+    border-radius: 6px;
     color: var(--text);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    padding: 6px 12px;
+    padding: 5px 9px;
     cursor: pointer;
     transition: background 0.15s;
     white-space: nowrap;
@@ -290,8 +290,10 @@
   .ctrl-btn.green { background: var(--green); color: #fff; }
   .ctrl-btn.green:hover { background: var(--green-dark); }
   .ctrl-btn.amber { background: var(--accent); color: #000; }
-  .ctrl-btn.star   { background: var(--accent); color: #000; font-size: 15px; }
+  .ctrl-btn.star  { background: var(--accent); color: #000; font-size: 13px; }
   .ctrl-btn.star:hover { background: #d97706; }
+  .ctrl-btn.add   { background: var(--surface2); color: var(--green); font-size: 16px; font-weight: 700; padding: 4px 9px; }
+  .ctrl-btn.add:hover { background: var(--border); }
 
   /* Recommendation overlay */
   .rec-overlay {
@@ -830,6 +832,7 @@
       <button class="ctrl-btn green" id="timer-btn">▶</button>
       <button class="ctrl-btn" id="half-btn">H/T</button>
       <button class="ctrl-btn star" id="rec-btn" title="Suggest next subs">★</button>
+      <button class="ctrl-btn add" id="add-player-btn" title="Add late player">+</button>
       <button class="ctrl-btn" id="reset-btn">✕</button>
     </div>
   </div>
@@ -893,8 +896,21 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v1.5</div>
+    <div class="about-version">v1.6</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
+  </div>
+</div>
+
+<!-- Add late player overlay -->
+<div class="overlay" id="add-player-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Add Late Player</div>
+    <div class="overlay-sub">Player will be added to the bench.</div>
+    <input id="late-player-input" type="text" placeholder="Player name"
+      style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;padding:11px 14px;outline:none;margin-bottom:12px;">
+    <p id="late-player-error" style="color:var(--red);font-size:13px;min-height:18px;margin-bottom:8px;"></p>
+    <button class="overlay-btn" id="late-player-confirm-btn">Add to Bench</button>
+    <button class="overlay-btn secondary" id="late-player-cancel-btn">Cancel</button>
   </div>
 </div>
 
@@ -1444,6 +1460,45 @@ document.getElementById('cancel-reset-btn').onclick = () => {
 document.getElementById('confirm-reset-btn').onclick = () => {
   location.reload();
 };
+
+// ─── Add Late Player ─────────────────────────────────────────────────────────
+
+document.getElementById('add-player-btn').onclick = () => {
+  document.getElementById('late-player-input').value = '';
+  document.getElementById('late-player-error').textContent = '';
+  document.getElementById('add-player-overlay').classList.add('visible');
+  setTimeout(() => document.getElementById('late-player-input').focus(), 100);
+};
+document.getElementById('late-player-cancel-btn').onclick = () => {
+  document.getElementById('add-player-overlay').classList.remove('visible');
+};
+document.getElementById('late-player-confirm-btn').onclick = addLatePlayer;
+document.getElementById('late-player-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addLatePlayer();
+});
+
+function addLatePlayer() {
+  const input = document.getElementById('late-player-input');
+  const error = document.getElementById('late-player-error');
+  const name  = input.value.trim();
+  if (!name) { error.textContent = 'Please enter a name.'; return; }
+  if (players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    error.textContent = `"${name}" is already in the squad.`;
+    return;
+  }
+  const newId = Math.max(...players.map(p => p.id)) + 1;
+  players.push({
+    id: newId,
+    name,
+    isGK: false,
+    onPitch: false,
+    timeOnPitch: 0,
+    subCount: 0,
+    lastOnAt: null,
+  });
+  document.getElementById('add-player-overlay').classList.remove('visible');
+  renderPlayerLists();
+}
 
 // ─── GK Change ───────────────────────────────────────────────────────────────
 
