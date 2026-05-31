@@ -893,7 +893,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v1.3</div>
+    <div class="about-version">v1.5</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1502,15 +1502,24 @@ function renderPlayerLists() {
 }
 
 // Returns a CSS colour string based on how much of the max time this player has played.
-// Stays within the red family: pale rose (low) → vivid red (high).
+// Scale: muted grey-blue (low) → amber (mid) → vivid red (high).
 function fatigueColor(timeOnPitch) {
   const maxTime = Math.max(...players.map(p => p.timeOnPitch), 1);
   const ratio = timeOnPitch / maxTime; // 0 → 1
 
-  // Hue fixed at 0 (red). Vary saturation and lightness only.
-  const s = Math.round(30 + ratio * 60);  // 30% → 90%
-  const l = Math.round(70 - ratio * 25);  // 70% → 45%
-  return `hsl(0,${s}%,${l}%)`;
+  let h, s, l;
+  if (ratio < 0.5) {
+    const t = ratio * 2;
+    h = 210 - t * 170;   // 210 (blue-grey) → 40 (amber)
+    s = 15  + t * 75;    // 15% → 90%
+    l = 60  - t * 10;    // 60% → 50%
+  } else {
+    const t = (ratio - 0.5) * 2;
+    h = 40  - t * 40;    // 40 (amber) → 0 (red)
+    s = 90;
+    l = 50  - t * 5;     // 50% → 45%
+  }
+  return `hsl(${Math.round(h)},${Math.round(s)}%,${Math.round(l)}%)`;
 }
 
 function renderPlayerTimes() {
