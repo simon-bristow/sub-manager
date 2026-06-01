@@ -107,6 +107,32 @@
     border-color: var(--green);
     color: #86efac;
   }
+  .config-custom {
+    flex: 1;
+    background: var(--surface2);
+    border: 1.5px solid transparent;
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 6px;
+    text-align: center;
+    outline: none;
+    min-width: 0;
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+  .config-custom::-webkit-outer-spin-button,
+  .config-custom::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .config-custom:focus { border-color: var(--green); }
+  .config-custom.selected {
+    background: rgba(34,197,94,0.18);
+    border-color: var(--green);
+    color: #86efac;
+  }
+  .config-custom::placeholder { color: var(--muted); font-weight: 700; }
 
   .setup-zones {
     flex: 1;
@@ -864,7 +890,7 @@
 
   <div class="match-config">
     <div class="config-row">
-      <span class="config-label">Periods</span>
+      <span class="config-label">Halves</span>
       <div class="config-options" id="config-periods">
         <button class="config-btn" data-value="1">1</button>
         <button class="config-btn selected" data-value="2">2</button>
@@ -877,6 +903,7 @@
         <button class="config-btn" data-value="30">30</button>
         <button class="config-btn" data-value="40">40</button>
         <button class="config-btn selected" data-value="45">45</button>
+        <input type="number" class="config-custom" id="custom-duration" min="1" max="120" placeholder="…">
       </div>
     </div>
     <div class="config-row">
@@ -886,6 +913,7 @@
         <button class="config-btn" data-value="7">7</button>
         <button class="config-btn" data-value="9">9</button>
         <button class="config-btn selected" data-value="11">11</button>
+        <input type="number" class="config-custom" id="custom-team-size" min="1" max="22" placeholder="…">
       </div>
     </div>
   </div>
@@ -995,7 +1023,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.29</div>
+    <div class="about-version">v0.30</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1373,26 +1401,35 @@ document.getElementById('start-btn').onclick = () => {
 // ── Match config button wiring ──
 const matchConfig = { periods: 2, minutes: 45, teamSize: 11 };
 
-function setupConfigButtons(groupId, configKey) {
+function setupConfigButtons(groupId, configKey, onChange) {
   const group = document.getElementById(groupId);
+  const custom = group.querySelector('.config-custom');
   group.querySelectorAll('.config-btn').forEach(btn => {
     btn.onclick = () => {
-      group.querySelectorAll('.config-btn').forEach(b => b.classList.remove('selected'));
+      group.querySelectorAll('.config-btn, .config-custom').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       matchConfig[configKey] = parseInt(btn.dataset.value, 10);
+      if (custom) custom.value = '';
+      if (onChange) onChange();
     };
   });
+  if (custom) {
+    custom.addEventListener('input', () => {
+      const v = parseInt(custom.value, 10);
+      if (Number.isFinite(v) && v > 0) {
+        group.querySelectorAll('.config-btn').forEach(b => b.classList.remove('selected'));
+        custom.classList.add('selected');
+        matchConfig[configKey] = v;
+        if (onChange) onChange();
+      }
+    });
+  }
 }
 setupConfigButtons('config-periods', 'periods');
 setupConfigButtons('config-duration', 'minutes');
-setupConfigButtons('config-team-size', 'teamSize');
-
-// Re-render zones when team size changes (updates header label and count colours)
-['config-team-size'].forEach(id => {
-  document.getElementById(id).addEventListener('click', () => {
-    document.getElementById('pitch-zone-label').textContent = `Starting ${matchConfig.teamSize}`;
-    updateZoneCounts();
-  });
+setupConfigButtons('config-team-size', 'teamSize', () => {
+  document.getElementById('pitch-zone-label').textContent = `Starting ${matchConfig.teamSize}`;
+  updateZoneCounts();
 });
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
