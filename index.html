@@ -831,7 +831,7 @@
     <button class="logo-btn" onclick="openAbout()"><img id="setup-logo" class="setup-logo" alt="CGFC"></button>
     <div>
       <div class="setup-title">Sub Manager</div>
-      <div class="setup-sub">Drag players to assign roles</div>
+      <div class="setup-sub">Set up match and starting team</div>
     </div>
   </div>
 
@@ -852,6 +852,15 @@
         <button class="config-btn selected" data-value="45">45</button>
       </div>
     </div>
+    <div class="config-row">
+      <span class="config-label">Team size</span>
+      <div class="config-options" id="config-team-size">
+        <button class="config-btn" data-value="5">5</button>
+        <button class="config-btn" data-value="7">7</button>
+        <button class="config-btn" data-value="9">9</button>
+        <button class="config-btn selected" data-value="11">11</button>
+      </div>
+    </div>
   </div>
 
   <div class="setup-zones">
@@ -864,7 +873,7 @@
       <div class="zone-cards" id="cards-bench"></div>
     </div>
     <div class="setup-zone" id="zone-pitch" data-zone="pitch">
-      <div class="zone-header">Starting 11 <span class="zone-count" id="count-pitch"></span></div>
+      <div class="zone-header"><span id="pitch-zone-label">Starting 11</span> <span class="zone-count" id="count-pitch"></span></div>
       <div class="gk-slot" id="gk-slot" data-zone="gk">
         <span class="gk-slot-empty" id="gk-slot-empty">GK</span>
       </div>
@@ -959,7 +968,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v2.0</div>
+    <div class="about-version">v2.1</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1100,12 +1109,13 @@ function updateZoneCounts() {
   const absentCount = roster.filter(p => p.group === 'absent').length;
 
   const pc = document.getElementById('count-pitch');
-  pc.textContent = `(${pitchCount}/11)`;
-  pc.className = `zone-count ${pitchCount === 11 ? 'full' : 'some'}`;
+  const max = matchConfig.teamSize;
+  pc.textContent = `(${pitchCount}/${max})`;
+  pc.className = `zone-count ${pitchCount === max ? 'full' : 'some'}`;
 
   // Lock the pitch zone visually when full
   const pitchZone = document.getElementById('zone-pitch');
-  if (pitchCount >= 11) pitchZone.classList.add('zone-full');
+  if (pitchCount >= max) pitchZone.classList.add('zone-full');
   else pitchZone.classList.remove('zone-full');
 
   document.getElementById('count-bench').textContent  = benchCount  ? `(${benchCount})` : '';
@@ -1215,11 +1225,11 @@ function dropIntoZone(group) {
   const player = roster.find(p => p.name === dragName);
   if (!player) return;
 
-  // Enforce max 11 in Starting 11 — player already on pitch doesn't count against the limit
+  // Enforce max team size in Starting — player already on pitch doesn't count against the limit
   if (group === 'pitch' || group === 'gk') {
     const currentPitchCount = roster.filter(p => p.group === 'pitch').length;
     const isAlreadyOnPitch = player.group === 'pitch';
-    if (!isAlreadyOnPitch && currentPitchCount >= 11) return; // full — ignore drop
+    if (!isAlreadyOnPitch && currentPitchCount >= matchConfig.teamSize) return; // full — ignore drop
   }
 
   // If dragging the current GK away from the GK slot, clear GK
@@ -1293,7 +1303,7 @@ document.getElementById('start-btn').onclick = () => {
 };
 
 // ── Match config button wiring ──
-const matchConfig = { periods: 2, minutes: 45 };
+const matchConfig = { periods: 2, minutes: 45, teamSize: 11 };
 
 function setupConfigButtons(groupId, configKey) {
   const group = document.getElementById(groupId);
@@ -1307,6 +1317,15 @@ function setupConfigButtons(groupId, configKey) {
 }
 setupConfigButtons('config-periods', 'periods');
 setupConfigButtons('config-duration', 'minutes');
+setupConfigButtons('config-team-size', 'teamSize');
+
+// Re-render zones when team size changes (updates header label and count colours)
+['config-team-size'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => {
+    document.getElementById('pitch-zone-label').textContent = `Starting ${matchConfig.teamSize}`;
+    updateZoneCounts();
+  });
+});
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
 

@@ -31,7 +31,7 @@ The app runs entirely in the browser with no backend or login required. All stat
 - Unlimited substitutions
 - Default squad of 17 named players; fill-in players can be added at setup time, or late players added during a match
 - Players assigned to Absent are excluded from the match entirely
-- Fewer than 11 starters is permitted (e.g. reduced-size games), capped at max 11
+- Configurable team size: **5, 7, 9, or 11** (default 11) — supports futsal, mini-soccer, 9-a-side and full 11-a-side. Fewer than the chosen team size is permitted; the Starting column is capped at the configured size.
 - One player can be designated as **Goalkeeper** (GK) via a dedicated slot in setup; the GK can be reassigned mid-match via long-press
 
 ---

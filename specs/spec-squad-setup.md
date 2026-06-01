@@ -72,6 +72,9 @@ Above the column zones, two button-group selectors capture match format:
 
 - **Periods**: `1` or `2` (default 2)
 - **Mins/half**: `20`, `30`, `40`, or `45` (default 45)
+- **Team size**: `5`, `7`, `9`, or `11` (default 11) — caters for futsal, 7-a-side, 9-a-side, full 11-a-side
+
+The Starting column header updates immediately (e.g. "Starting 5" for futsal) and caps drops at the chosen size.
 
 Selected option highlights in green. Values are applied when **Start Match** is tapped.
 
