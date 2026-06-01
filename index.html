@@ -521,19 +521,31 @@
     color: var(--muted);
     font-style: italic;
   }
-  .empty-slot-btn {
-    background: var(--green);
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 10px;
+  /* Empty pitch slot placeholder */
+  .empty-slot-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
     cursor: pointer;
-    font-style: normal;
-    margin-left: 4px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    height: 30px;
+    transition: border-color 0.15s, background 0.15s;
   }
-  .empty-slot-btn:hover { background: var(--green-dark); }
+  .empty-slot-card:hover { border-color: var(--muted); }
+  .empty-slot-card.active {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.08);
+    color: var(--green);
+  }
 
   /* Player lists */
   .lists {
@@ -983,7 +995,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v2.5</div>
+    <div class="about-version">v2.6</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1700,8 +1712,31 @@ function renderPlayerLists() {
   onPitch.forEach(p => pitchEl.appendChild(makeCard(p)));
   onBench.forEach(p => benchEl.appendChild(makeCard(p)));
 
-  document.getElementById('pitch-count').textContent = `(${onPitch.length})`;
+  // Empty pitch slots — visible only if pitch has fewer than team size
+  const stagedSoloOn = stagedSubs.filter(s => s.offId === null).length;
+  const totalEmpty   = matchConfig.teamSize - onPitch.length;
+  const freeEmpty    = totalEmpty - stagedSoloOn;
+  for (let i = 0; i < stagedSoloOn; i++) pitchEl.appendChild(makeEmptySlotCard(true));
+  for (let i = 0; i < freeEmpty;   i++) pitchEl.appendChild(makeEmptySlotCard(false));
+
+  document.getElementById('pitch-count').textContent = `(${onPitch.length}/${matchConfig.teamSize})`;
   document.getElementById('bench-count').textContent  = `(${onBench.length})`;
+}
+
+function makeEmptySlotCard(staged) {
+  const card = document.createElement('div');
+  card.className = 'empty-slot-card' + (staged ? ' active' : '');
+  card.textContent = staged ? '↑ Staged' : 'Empty';
+  card.onclick = () => {
+    if (staged) return; // already claimed
+    if (pendingOn !== null) {
+      stagedSubs.push({ offId: null, onId: pendingOn });
+      pendingOn = null;
+      updateSubBar();
+      renderPlayerLists();
+    }
+  };
+  return card;
 }
 
 // Returns a CSS colour string based on how much of the max time this player has played.
@@ -1847,17 +1882,14 @@ function updateSubBar() {
     </div>`;
   }).join('');
 
-  // Pending hint with optional "Bring on (empty slot)" button
+  // Pending hint
   if (pendingOn !== null) {
     const on = players.find(p => p.id === pendingOn);
     const slots = availableEmptySlots();
     hintEl.style.display = 'block';
-    if (slots > 0) {
-      hintEl.innerHTML = `↑ ${escHtml(on.name)} coming on — tap a pitch player to swap, or
-        <button class="empty-slot-btn" onclick="stageEmptySlot()">+ Bring on (${slots} empty)</button>`;
-    } else {
-      hintEl.textContent = `↑ ${on.name} coming on — now tap a pitch player to swap`;
-    }
+    hintEl.textContent = slots > 0
+      ? `↑ ${on.name} coming on — tap a pitch player to swap, or tap an empty slot`
+      : `↑ ${on.name} coming on — now tap a pitch player to swap`;
   } else {
     hintEl.style.display = 'none';
   }
@@ -1865,14 +1897,6 @@ function updateSubBar() {
   confirmBtn.disabled = stagedSubs.length === 0;
 }
 
-function stageEmptySlot() {
-  if (pendingOn === null) return;
-  if (availableEmptySlots() <= 0) return;
-  stagedSubs.push({ offId: null, onId: pendingOn });
-  pendingOn = null;
-  updateSubBar();
-  renderPlayerLists();
-}
 
 function removeStagedPair(index) {
   stagedSubs.splice(index, 1);
