@@ -66,6 +66,15 @@ Three columns fill the screen between the header and the bottom controls:
 
 ---
 
+## Match Configuration
+
+Above the column zones, two button-group selectors capture match format:
+
+- **Periods**: `1` or `2` (default 2)
+- **Mins/half**: `20`, `30`, `40`, or `45` (default 45)
+
+Selected option highlights in green. Values are applied when **Start Match** is tapped.
+
 ## Adding Fill-In Players
 
 - A text input and **+** button sit below the three columns

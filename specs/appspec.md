@@ -27,12 +27,12 @@ The app runs entirely in the browser with no backend or login required. All stat
 
 ## Match Format
 
-- Two 40-minute halves (80 minutes total)
+- Configurable: **1 or 2 periods**, each **20/30/40/45 minutes** (defaults to 2 × 45 min)
 - Unlimited substitutions
-- Default squad of 17 named players; fill-in players can be added at setup time
+- Default squad of 17 named players; fill-in players can be added at setup time, or late players added during a match
 - Players assigned to Absent are excluded from the match entirely
-- Fewer than 11 starters is permitted (e.g. reduced-size games)
-- One player can be designated as **Goalkeeper** (GK) via a dedicated slot in setup
+- Fewer than 11 starters is permitted (e.g. reduced-size games), capped at max 11
+- One player can be designated as **Goalkeeper** (GK) via a dedicated slot in setup; the GK can be reassigned mid-match via long-press
 
 ---
 
