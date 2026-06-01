@@ -24,12 +24,14 @@ Allow the coach to plan and execute one or more simultaneous substitutions with 
 ### Step 2 — Select a player coming on
 - Tap any player in the **Bench** column → highlights green
 - The substitution bar shows the pending hint: *"↑ [Name] coming on — tap a pitch player to swap..."*
-- **If the pitch has empty slots** (fewer players than the configured team size), an extra green **+ Bring on (N empty)** button appears next to the hint. Tapping it stages the bench player as a solo addition with no one coming off
-- Tap a pitch player → pair is **staged** as a normal swap
+- **If the pitch has empty slots** (fewer players than the configured team size), each open slot appears at the bottom of the Pitch column as a dashed grey **Empty** placeholder. Tapping one stages the bench player as a solo addition with no one coming off; the placeholder turns green and reads **↑ Staged**
+- Tap a regular pitch player → pair is **staged** as a normal swap
 
 When staged:
 - Normal swap appears as: `↑ [On] / ↓ [Off]`
 - Solo bring-on appears as: `↑ [On] → empty slot`
+
+The Pitch column header shows the current fill against team size, e.g. **Pitch (10/11)**.
 
 ### Step 3 — Add more pairs (optional)
 - Repeat steps 1–2 to stage additional substitution pairs
