@@ -34,7 +34,7 @@ The version lives in two places — update both:
 1. The `<div id="about-overlay">` card: `<div class="about-version">v0.XX</div>` (line ~896 in index.html)
 2. The commit message suffix: include `; v0.XX` at the end
 
-Current version after last commit: **v0.27**. Next commit should use **v0.28**, then **v0.29**, etc.
+Current version after last commit: **v0.28**. Next commit should use **v0.29**, then **v0.30**, etc.
 
 ## Stack
 

@@ -24,7 +24,7 @@ Three columns fill the screen between the header and the bottom controls:
 |---|---|---|
 | Starting 11 | Green tint | Contains GK slot + outfield player cards; shows player count |
 | Bench | Blue tint | Shows player count |
-| Absent | Muted grey | Shows player count |
+| Squad | Muted grey | Pool of players available but not assigned to Starting/Bench; shows count |
 
 ### GK Slot
 
