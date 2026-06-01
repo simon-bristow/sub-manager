@@ -32,7 +32,7 @@ The version lives in two places — update both:
 1. The `<div id="about-overlay">` card: `<div class="about-version">vX.X</div>` (line ~896 in index.html)
 2. The commit message suffix: include `; vX.X` at the end
 
-Current version after last commit: **v2.4**. Next commit should use **v2.5**, then **v2.6**, etc.
+Current version after last commit: **v2.5**. Next commit should use **v2.6**, then **v2.7**, etc.
 
 ## Stack
 

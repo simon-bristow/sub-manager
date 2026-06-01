@@ -22,10 +22,14 @@ Allow the coach to plan and execute one or more simultaneous substitutions with 
 - The substitution bar appears at the top of the player lists with a hint: *"↓ [Name] coming off — now tap a bench player"*
 
 ### Step 2 — Select a player coming on
-- Tap any player in the **Bench** column
-- The pair is immediately **staged**: both cards lock in (red for off, green for on)
-- The staged pair appears in the substitution bar as a row: `↑ [On] / ↓ [Off]`
-- The pending hint clears
+- Tap any player in the **Bench** column → highlights green
+- The substitution bar shows the pending hint: *"↑ [Name] coming on — tap a pitch player to swap..."*
+- **If the pitch has empty slots** (fewer players than the configured team size), an extra green **+ Bring on (N empty)** button appears next to the hint. Tapping it stages the bench player as a solo addition with no one coming off
+- Tap a pitch player → pair is **staged** as a normal swap
+
+When staged:
+- Normal swap appears as: `↑ [On] / ↓ [Off]`
+- Solo bring-on appears as: `↑ [On] → empty slot`
 
 ### Step 3 — Add more pairs (optional)
 - Repeat steps 1–2 to stage additional substitution pairs

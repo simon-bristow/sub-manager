@@ -521,6 +521,19 @@
     color: var(--muted);
     font-style: italic;
   }
+  .empty-slot-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-style: normal;
+    margin-left: 4px;
+  }
+  .empty-slot-btn:hover { background: var(--green-dark); }
 
   /* Player lists */
   .lists {
@@ -970,7 +983,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v2.4</div>
+    <div class="about-version">v2.5</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1799,6 +1812,12 @@ function selectPlayer(id) {
   renderPlayerLists();
 }
 
+function availableEmptySlots() {
+  const onPitch = players.filter(p => p.onPitch).length;
+  const stagedSoloOn = stagedSubs.filter(s => s.offId === null).length;
+  return matchConfig.teamSize - onPitch - stagedSoloOn;
+}
+
 function updateSubBar() {
   const bar         = document.getElementById('sub-bar');
   const stagedEl    = document.getElementById('staged-pairs');
@@ -1808,9 +1827,17 @@ function updateSubBar() {
   const hasAnything = stagedSubs.length > 0 || pendingOn !== null;
   bar.classList.toggle('visible', hasAnything);
 
-  // Staged pairs
+  // Staged pairs (offId === null means filling an empty slot, no one comes off)
   stagedEl.innerHTML = stagedSubs.map((s, i) => {
     const on  = players.find(p => p.id === s.onId);
+    if (s.offId === null) {
+      return `<div class="staged-pair">
+        <span class="pair-on">↑ ${escHtml(on.name)}</span>
+        <span class="pair-arrow">→</span>
+        <span class="pair-off" style="color:var(--muted);font-style:italic">empty slot</span>
+        <button class="pair-remove" onclick="removeStagedPair(${i})">✕</button>
+      </div>`;
+    }
     const off = players.find(p => p.id === s.offId);
     return `<div class="staged-pair">
       <span class="pair-on">↑ ${escHtml(on.name)}</span>
@@ -1820,16 +1847,31 @@ function updateSubBar() {
     </div>`;
   }).join('');
 
-  // Pending hint
+  // Pending hint with optional "Bring on (empty slot)" button
   if (pendingOn !== null) {
     const on = players.find(p => p.id === pendingOn);
+    const slots = availableEmptySlots();
     hintEl.style.display = 'block';
-    hintEl.textContent = `↑ ${on.name} coming on — now tap a pitch player to swap`;
+    if (slots > 0) {
+      hintEl.innerHTML = `↑ ${escHtml(on.name)} coming on — tap a pitch player to swap, or
+        <button class="empty-slot-btn" onclick="stageEmptySlot()">+ Bring on (${slots} empty)</button>`;
+    } else {
+      hintEl.textContent = `↑ ${on.name} coming on — now tap a pitch player to swap`;
+    }
   } else {
     hintEl.style.display = 'none';
   }
 
   confirmBtn.disabled = stagedSubs.length === 0;
+}
+
+function stageEmptySlot() {
+  if (pendingOn === null) return;
+  if (availableEmptySlots() <= 0) return;
+  stagedSubs.push({ offId: null, onId: pendingOn });
+  pendingOn = null;
+  updateSubBar();
+  renderPlayerLists();
 }
 
 function removeStagedPair(index) {
@@ -1851,15 +1893,19 @@ document.getElementById('confirm-sub-btn').onclick = () => {
 
   const pairs = [];
   stagedSubs.forEach(({ offId, onId }) => {
-    const off = players.find(p => p.id === offId);
     const on  = players.find(p => p.id === onId);
-    off.onPitch = false;
-    off.lastOnAt = null;
-    off.subCount++;
     on.onPitch = true;
     on.lastOnAt = matchSeconds;
     on.subCount++;
-    pairs.push({ onName: on.name, offName: off.name });
+    if (offId === null) {
+      pairs.push({ onName: on.name, offName: null });
+    } else {
+      const off = players.find(p => p.id === offId);
+      off.onPitch = false;
+      off.lastOnAt = null;
+      off.subCount++;
+      pairs.push({ onName: on.name, offName: off.name });
+    }
   });
   subLog.push({ minute, pairs });
 
@@ -1882,7 +1928,7 @@ function renderSubLog() {
         ${e.pairs.map(p => `
           <div class="log-pair">
             <span class="log-on">↑ ${escHtml(p.onName)}</span>
-            <span class="log-off">↓ ${escHtml(p.offName)}</span>
+            ${p.offName ? `<span class="log-off">↓ ${escHtml(p.offName)}</span>` : `<span class="log-off" style="color:var(--muted);font-style:italic">→ empty slot</span>`}
           </div>`).join('')}
       </div>
     </div>
