@@ -63,9 +63,10 @@ When **1 period** is selected, the **H/T** button is replaced by **F/T**, the pe
 
 ## Display
 
-- Clock is shown in `MM:SS` format using tabular (fixed-width) numerals
+- Main clock shows elapsed time in `MM:SS` format, large and bold, using tabular numerals
+- A smaller, muted **time-left** counter (e.g. `-12:34`) appears next to the main clock, showing the remaining time in the current half
 - "1st Half" / "2nd Half" label shown above the clock
-- Timer display is capped at 40:00 even if the clock overruns slightly
+- Timer display is capped at the configured half duration even if the clock overruns slightly
 
 ---
 
