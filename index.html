@@ -995,7 +995,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.28</div>
+    <div class="about-version">v0.29</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1190,6 +1190,11 @@ function attachCardListeners() {
       dragSourceCard = null;
     });
 
+    // Desktop click (fires only when no drag occurred)
+    card.addEventListener('click', () => {
+      tapMovePlayerToPitch(card.dataset.name);
+    });
+
     // Touch drag
     card.addEventListener('touchstart', onTouchStart, { passive: false });
     card.addEventListener('touchmove',  onTouchMove,  { passive: false });
@@ -1197,11 +1202,30 @@ function attachCardListeners() {
   });
 }
 
+function tapMovePlayerToPitch(name) {
+  const player = roster.find(p => p.name === name);
+  if (!player) return;
+  // If already on pitch, do nothing
+  if (player.group === 'pitch') return;
+  // Respect team-size cap
+  const currentPitchCount = roster.filter(p => p.group === 'pitch').length;
+  if (currentPitchCount >= matchConfig.teamSize) return;
+  player.group = 'pitch';
+  renderSetupZones();
+  attachCardListeners();
+}
+
+let touchStartX = 0, touchStartY = 0, touchMoved = false;
+const TAP_THRESHOLD = 8; // px
+
 function onTouchStart(e) {
   e.preventDefault();
   const card = e.currentTarget;
   dragName = card.dataset.name;
   dragSourceCard = card;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchMoved = false;
   card.classList.add('is-dragging');
 
   // Create ghost
@@ -1211,16 +1235,27 @@ function onTouchStart(e) {
   dragGhostEl.style.color = getComputedStyle(card).color;
   dragGhostEl.style.border = getComputedStyle(card).border;
   dragGhostEl.style.minWidth = card.offsetWidth + 'px';
+  dragGhostEl.style.display = 'none'; // hidden until movement starts
   positionGhost(e.touches[0]);
   document.body.appendChild(dragGhostEl);
 }
 
 function onTouchMove(e) {
   e.preventDefault();
-  positionGhost(e.touches[0]);
+  const t = e.touches[0];
+  if (!touchMoved) {
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    if (Math.hypot(dx, dy) > TAP_THRESHOLD) {
+      touchMoved = true;
+      if (dragGhostEl) dragGhostEl.style.display = '';
+    }
+  }
+  if (!touchMoved) return;
+  positionGhost(t);
   // Highlight zone under finger
   dragGhostEl.style.display = 'none';
-  const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+  const el = document.elementFromPoint(t.clientX, t.clientY);
   dragGhostEl.style.display = '';
   document.querySelectorAll('.setup-zone, .gk-slot').forEach(z => z.classList.remove('drag-over'));
   const zone = el?.closest('.gk-slot') || el?.closest('.setup-zone');
@@ -1232,14 +1267,20 @@ function onTouchEnd(e) {
   dragGhostEl?.remove(); dragGhostEl = null;
   dragSourceCard?.classList.remove('is-dragging');
 
-  const touch = e.changedTouches[0];
-  const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  document.querySelectorAll('.setup-zone, .gk-slot').forEach(z => z.classList.remove('drag-over'));
-  const zone = el?.closest('.gk-slot') || el?.closest('.setup-zone');
-  if (zone && dragName) dropIntoZone(zone.dataset.zone || 'gk');
+  if (!touchMoved && dragName) {
+    // Treat as tap — move to Starting
+    tapMovePlayerToPitch(dragName);
+  } else {
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    document.querySelectorAll('.setup-zone, .gk-slot').forEach(z => z.classList.remove('drag-over'));
+    const zone = el?.closest('.gk-slot') || el?.closest('.setup-zone');
+    if (zone && dragName) dropIntoZone(zone.dataset.zone || 'gk');
+  }
 
   dragName = null;
   dragSourceCard = null;
+  touchMoved = false;
 }
 
 function positionGhost(touch) {
