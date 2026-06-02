@@ -360,6 +360,7 @@
     font-variant-numeric: tabular-nums;
     margin-top: 2px;
   }
+  .next-sub.warning { color: var(--red); font-weight: 700; }
   .next-sub.firing {
     color: var(--accent);
     animation: subPulse 1s ease-in-out infinite;
@@ -1063,7 +1064,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.32</div>
+    <div class="about-version">v0.33</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1555,7 +1556,10 @@ function updateClock() {
   }
   nextSubEl.style.display = '';
   const subRemaining = Math.max(0, nextAlertAt - matchSeconds);
-  nextSubEl.textContent = `Next sub in ${formatTime(subRemaining)}`;
+  if (!nextSubEl.classList.contains('firing')) {
+    nextSubEl.textContent = `Next sub in ${formatTime(subRemaining)}`;
+    nextSubEl.classList.toggle('warning', subRemaining > 0 && subRemaining <= 60);
+  }
 }
 
 function fireSubAlert() {
@@ -1578,6 +1582,7 @@ function fireSubAlert() {
   // Auto-clear after 4s
   setTimeout(() => {
     el.classList.remove('firing');
+    el.classList.remove('warning');
     nextAlertAt = matchSeconds + ALERT_INTERVAL;
     updateClock();
   }, 4000);

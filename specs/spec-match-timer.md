@@ -73,6 +73,7 @@ When **1 period** is selected, the **H/T** button is replaced by **F/T**, the pe
 
 - The interval is configured at setup (Sub alert row — default 10 min)
 - The countdown ticks down from the configured interval; pauses when the match timer pauses
+- When the countdown is within the **final minute** (≤ 60 sec), it turns **red and bold** as a warning
 - When it hits 0:
   - The countdown turns amber and pulses, reading **SUB NOW!**
   - A short beep plays (where Web Audio is supported)
