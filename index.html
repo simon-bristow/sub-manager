@@ -353,6 +353,21 @@
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
+  .next-sub {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+  }
+  .next-sub.firing {
+    color: var(--accent);
+    animation: subPulse 1s ease-in-out infinite;
+  }
+  @keyframes subPulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+  }
 
   .timer-controls {
     display: flex;
@@ -927,6 +942,16 @@
         <input type="number" class="config-custom" id="custom-team-size" min="1" max="22" placeholder="…">
       </div>
     </div>
+    <div class="config-row">
+      <span class="config-label">Sub alert</span>
+      <div class="config-options" id="config-alert">
+        <button class="config-btn" data-value="5">5</button>
+        <button class="config-btn selected" data-value="10">10</button>
+        <button class="config-btn" data-value="15">15</button>
+        <button class="config-btn" data-value="20">20</button>
+        <input type="number" class="config-custom" id="custom-alert" min="1" max="45" placeholder="…">
+      </div>
+    </div>
   </div>
 
   <div class="setup-zones">
@@ -968,6 +993,7 @@
         <div class="clock" id="clock">00:00</div>
         <div class="time-left" id="time-left">-45:00</div>
       </div>
+      <div class="next-sub" id="next-sub">Next sub in 10:00</div>
     </div>
     <div class="timer-controls">
       <button class="ctrl-btn green" id="timer-btn">▶</button>
@@ -1037,7 +1063,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.31</div>
+    <div class="about-version">v0.32</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1104,6 +1130,8 @@
 // Match config (configurable in setup screen)
 let HALF_DURATION = 45 * 60; // seconds — set from config before match starts
 let NUM_PERIODS = 2;
+let ALERT_INTERVAL = 10 * 60; // seconds — sub alert frequency
+let nextAlertAt = ALERT_INTERVAL;
 
 let players = [];   // { id, name, onPitch, timeOnPitch (s), subCount, lastOnAt (match seconds) }
 let timerRunning = false;
@@ -1402,6 +1430,8 @@ document.getElementById('start-btn').onclick = () => {
   // Apply match config
   NUM_PERIODS = matchConfig.periods;
   HALF_DURATION = matchConfig.minutes * 60;
+  ALERT_INTERVAL = matchConfig.alertMins * 60;
+  nextAlertAt = ALERT_INTERVAL;
 
   // Update half label and H/T button for single-period games
   document.getElementById('half-label').textContent = NUM_PERIODS === 1 ? 'Period' : '1st Half';
@@ -1413,7 +1443,7 @@ document.getElementById('start-btn').onclick = () => {
 };
 
 // ── Match config button wiring ──
-const matchConfig = { periods: 2, minutes: 45, teamSize: 11 };
+const matchConfig = { periods: 2, minutes: 45, teamSize: 11, alertMins: 10 };
 
 function setupConfigButtons(groupId, configKey, onChange) {
   const group = document.getElementById(groupId);
@@ -1445,6 +1475,7 @@ setupConfigButtons('config-team-size', 'teamSize', () => {
   document.getElementById('pitch-zone-label').textContent = `Starting ${matchConfig.teamSize}`;
   updateZoneCounts();
 });
+setupConfigButtons('config-alert', 'alertMins');
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
 
@@ -1481,6 +1512,11 @@ function tick() {
   // Re-sort cards every ~60 seconds so order stays accurate
   if (Math.floor(matchSeconds / 60) > prevSort) renderPlayerLists();
 
+  // Sub alert
+  if (matchSeconds >= nextAlertAt && !document.getElementById('next-sub').classList.contains('firing')) {
+    fireSubAlert();
+  }
+
   const elapsed = halfElapsed();
 
   // End of period reached
@@ -1510,6 +1546,41 @@ function updateClock() {
   document.getElementById('clock').textContent = formatTime(Math.min(display, HALF_DURATION));
   const remaining = Math.max(0, HALF_DURATION - display);
   document.getElementById('time-left').textContent = `-${formatTime(remaining)}`;
+
+  // Next sub alert countdown
+  const nextSubEl = document.getElementById('next-sub');
+  if (matchOver) {
+    nextSubEl.style.display = 'none';
+    return;
+  }
+  nextSubEl.style.display = '';
+  const subRemaining = Math.max(0, nextAlertAt - matchSeconds);
+  nextSubEl.textContent = `Next sub in ${formatTime(subRemaining)}`;
+}
+
+function fireSubAlert() {
+  const el = document.getElementById('next-sub');
+  el.classList.add('firing');
+  el.textContent = 'SUB NOW!';
+  // Simple beep using Web Audio
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.start(); osc.stop(ctx.currentTime + 0.6);
+  } catch (e) { /* audio not supported */ }
+  // Vibrate if available
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  // Auto-clear after 4s
+  setTimeout(() => {
+    el.classList.remove('firing');
+    nextAlertAt = matchSeconds + ALERT_INTERVAL;
+    updateClock();
+  }, 4000);
 }
 
 document.getElementById('timer-btn').onclick = () => {
