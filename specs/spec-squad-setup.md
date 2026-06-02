@@ -73,6 +73,7 @@ Above the column zones, two button-group selectors capture match format:
 - **Halves**: `1` or `2` (default 2)
 - **Mins/half**: `20`, `30`, `40`, `45`, or a custom value typed into the inline `…` text field (default 45)
 - **Team size**: `5`, `7`, `9`, `11`, or a custom value typed into the inline `…` text field (default 11) — caters for futsal, 7-a-side, 9-a-side, full 11-a-side, and anything in between
+- **Sub alert**: `5`, `10`, `15`, `20`, or a custom value (minutes between automatic substitution reminders, default 10)
 
 Typing into a custom field deselects all preset buttons in that row and highlights the field instead. Typing a value re-syncs immediately as you type.
 
