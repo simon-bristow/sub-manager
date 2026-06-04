@@ -2,7 +2,11 @@
 
 ## Purpose
 
-Allow the coach to assign players to one of three roles before a match starts: **Starting 11**, **Bench**, or **Absent**. The setup screen is the entry point of the app and must be completed before a match can begin.
+Allow the coach to assign players to one of three roles before a match starts: **Starting**, **Bench**, or **Squad** (pool). This is the **second screen** in the setup flow — the first is Match Setup (halves, duration, team size, sub alert).
+
+## Match Summary Banner
+
+A compact summary banner sits beneath the title showing the chosen match format, e.g. *"2 × 45 min · 11-a-side · Sub alert 10 min"*. A green **Edit** button next to it returns to the Match Setup screen if changes are needed.
 
 ---
 

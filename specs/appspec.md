@@ -39,9 +39,10 @@ The app runs entirely in the browser with no backend or login required. All stat
 ## App Flow
 
 ```
-Squad Setup  →  Match (1st Half)  →  Half Time  →  Match (2nd Half)  →  Full Time Summary
-     ↑                                                                          |
-     └──────────────────────── Reset (at any point) ────────────────────────────┘
+Match Setup → Squad Setup → Match (1st Half) → Half Time → Match (2nd Half) → Full Time Summary
+     ↑           ↑                                                                       |
+     │           └── Edit link returns to Match Setup ──┐                                │
+     └──────────────────────────── Reset (at any point) ┴────────────────────────────────┘
 ```
 
 ---
@@ -50,7 +51,8 @@ Squad Setup  →  Match (1st Half)  →  Half Time  →  Match (2nd Half)  →  
 
 | Screen | Purpose |
 |---|---|
-| Squad Setup | Assign players to Starting, Bench, or Absent via drag-and-drop |
+| Match Setup | First screen — choose halves, mins/half, team size, and sub alert frequency |
+| Squad Setup | Drag/tap players into Starting, Bench, or Squad pool. Shows match summary with Edit link back to Match Setup |
 | Match Screen | Live view of pitch/bench/subs with timer and substitution controls |
 | Half Time Overlay | Pause between halves; prompt to start 2nd half |
 | Full Time Overlay | End-of-match summary with minutes played per player |
