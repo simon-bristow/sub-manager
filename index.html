@@ -32,14 +32,35 @@
     margin: 0 auto;
   }
 
-  /* ─── SETUP SCREEN ─── */
-  #setup-screen {
+  /* ─── SETUP SCREENS ─── */
+  #setup-screen, #match-setup-screen {
     display: flex;
     flex-direction: column;
     height: 100dvh;
     padding: 12px 12px 16px;
     gap: 10px;
   }
+
+  .match-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .edit-link {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .edit-link:hover { border-color: var(--green); }
 
   .setup-header {
     display: flex;
@@ -906,12 +927,13 @@
 <body>
 
 <!-- ═══════════════════════════════════════ SETUP ═══ -->
-<div id="setup-screen">
+<!-- ═══════════════════════════════════════ MATCH SETUP ═══ -->
+<div id="match-setup-screen">
   <div class="setup-header">
-    <button class="logo-btn" onclick="openAbout()"><img id="setup-logo" class="setup-logo" alt="CGFC"></button>
+    <button class="logo-btn" onclick="openAbout()"><img id="setup-logo-match" class="setup-logo" alt="CGFC"></button>
     <div>
-      <div class="setup-title">Sub Manager</div>
-      <div class="setup-sub">Set up match and starting team</div>
+      <div class="setup-title">Match Setup</div>
+      <div class="setup-sub">Choose match format</div>
     </div>
   </div>
 
@@ -951,6 +973,22 @@
         <button class="config-btn" data-value="15">15</button>
         <button class="config-btn" data-value="20">20</button>
         <input type="number" class="config-custom" id="custom-alert" min="1" max="45" placeholder="…">
+      </div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="goto-squad-btn">Next: Squad Setup →</button>
+</div>
+
+<!-- ═══════════════════════════════════════ SQUAD SETUP ═══ -->
+<div id="setup-screen" style="display:none">
+  <div class="setup-header">
+    <button class="logo-btn" onclick="openAbout()"><img id="setup-logo" class="setup-logo" alt="CGFC"></button>
+    <div style="flex:1">
+      <div class="setup-title">Squad Setup</div>
+      <div class="match-summary" id="match-summary">
+        <span id="match-summary-text"></span>
+        <button class="edit-link" id="edit-match-btn">Edit</button>
       </div>
     </div>
   </div>
@@ -1064,7 +1102,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.33</div>
+    <div class="about-version">v0.34</div>
     <button class="about-close-btn" id="about-close-btn">Close</button>
   </div>
 </div>
@@ -1161,12 +1199,35 @@ let dragGhostEl = null;
 let dragSourceCard = null;
 
 function buildSetup() {
-  // Copy logo src from match header into setup logo
+  // Copy logo src from match header into both setup logos
   const matchLogo = document.querySelector('.team-logo');
-  if (matchLogo) document.getElementById('setup-logo').src = matchLogo.src;
+  if (matchLogo) {
+    document.getElementById('setup-logo').src = matchLogo.src;
+    document.getElementById('setup-logo-match').src = matchLogo.src;
+  }
   renderSetupZones();
   setupDragDrop();
 }
+
+function updateMatchSummary() {
+  const halvesLabel = matchConfig.periods === 1 ? '1 half' : `${matchConfig.periods} × ${matchConfig.minutes} min`;
+  const halvesText  = matchConfig.periods === 1 ? `${matchConfig.minutes} min` : halvesLabel;
+  const sizeText    = `${matchConfig.teamSize}-a-side`;
+  const alertText   = `Sub alert ${matchConfig.alertMins} min`;
+  document.getElementById('match-summary-text').textContent =
+    `${halvesText} · ${sizeText} · ${alertText}`;
+}
+
+document.getElementById('goto-squad-btn').onclick = () => {
+  updateMatchSummary();
+  document.getElementById('match-setup-screen').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+};
+
+document.getElementById('edit-match-btn').onclick = () => {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('match-setup-screen').style.display = 'flex';
+};
 
 function renderSetupZones() {
   // GK slot
