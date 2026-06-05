@@ -38,7 +38,8 @@ let matchConfig = loadMatchConfig();
 let HALF_DURATION  = 45 * 60;
 let NUM_PERIODS    = 2;
 let ALERT_INTERVAL = 10 * 60;
-let nextAlertAt    = ALERT_INTERVAL;
+let nextAlertAt       = ALERT_INTERVAL;
+let subAlertDisabled  = false;
 
 let players        = [];
 let timerRunning   = false;
@@ -699,7 +700,7 @@ function tick() {
 
   if (Math.floor(matchSeconds / 60) > prevSort) renderPlayerLists();
 
-  if (matchSeconds >= nextAlertAt && !document.getElementById('next-sub').classList.contains('firing')) {
+  if (!subAlertDisabled && matchSeconds >= nextAlertAt && !document.getElementById('next-sub').classList.contains('firing')) {
     fireSubAlert();
   }
 
@@ -724,9 +725,10 @@ function updateClock() {
   const remaining = Math.max(0, HALF_DURATION - display);
   document.getElementById('time-left').textContent = `-${formatTime(remaining)}`;
 
-  const nextSubEl = document.getElementById('next-sub');
-  if (matchOver) { nextSubEl.style.display = 'none'; return; }
-  nextSubEl.style.display = '';
+  const nextSubEl  = document.getElementById('next-sub');
+  const rowEl      = document.getElementById('next-sub-row');
+  if (matchOver || subAlertDisabled) { rowEl.style.display = 'none'; return; }
+  rowEl.style.display = '';
   const subRemaining = Math.max(0, nextAlertAt - matchSeconds);
   if (!nextSubEl.classList.contains('firing')) {
     nextSubEl.textContent = `Next sub in ${formatTime(subRemaining)}`;
@@ -839,7 +841,8 @@ function resetMatchState() {
   subLog      = [];
   pendingOn   = null;
   stagedSubs  = [];
-  matchOver   = false;
+  matchOver         = false;
+  subAlertDisabled  = false;
   players     = [];
   gkName      = null;
   roster      = roster.map(p => ({ ...p, group: 'absent' }));
@@ -1271,6 +1274,12 @@ function renderSubLog() {
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && timerRunning && !matchOver) tick();
 });
+
+document.getElementById('next-sub-dismiss').onclick = () => {
+  subAlertDisabled = true;
+  const rowEl = document.getElementById('next-sub-row');
+  rowEl.style.display = 'none';
+};
 
 // ─── About overlay ────────────────────────────────────────────────────────────
 function openAbout() {
