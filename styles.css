@@ -317,6 +317,21 @@ body {
   transition: background 0.15s;
 }
 .season-new-match-btn:hover { background: var(--green-dark); }
+.season-reset-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.season-reset-btn:hover { background: rgba(239,68,68,0.08); border-color: var(--red); }
 
 /* ─── SETUP SCREENS ─── */
 #setup-screen, #match-setup-screen {

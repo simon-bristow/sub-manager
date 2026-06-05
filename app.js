@@ -296,6 +296,33 @@ document.getElementById('season-new-match-btn').onclick = () => {
   showScreen('match-setup-screen');
 };
 
+document.getElementById('season-reset-btn').onclick = () => {
+  document.getElementById('reset-season-overlay').classList.add('visible');
+};
+document.getElementById('cancel-reset-season-btn').onclick = () => {
+  document.getElementById('reset-season-overlay').classList.remove('visible');
+};
+document.getElementById('confirm-reset-season-btn').onclick = async () => {
+  document.getElementById('reset-season-overlay').classList.remove('visible');
+  showToast('Resetting…');
+  try {
+    const players = await loadPlayersFromFirestore(currentTeamId);
+    const batch = writeBatch(db);
+    players.forEach(p => {
+      batch.update(doc(db, 'teams', currentTeamId, 'players', p.id), {
+        seasonMinutes: 0,
+        appearances: 0,
+      });
+    });
+    await batch.commit();
+    showToast('Stats reset ✓');
+    showSeasonScreen();
+  } catch (e) {
+    console.error('Reset failed', e);
+    showToast('Reset failed');
+  }
+};
+
 // ─── Setup Screen ─────────────────────────────────────────────────────────────
 function buildSetup() {
   const matchLogo = document.querySelector('.team-logo');

@@ -235,6 +235,7 @@
       <tbody id="season-table-body"></tbody>
     </table>
     <button class="season-new-match-btn" id="season-new-match-btn">New Match</button>
+    <button class="season-reset-btn" id="season-reset-btn">Reset all stats…</button>
   </div>
 </div>
 
@@ -298,6 +299,16 @@
     <div class="overlay-sub">This will stop the game and return to the match setup screen.</div>
     <button class="overlay-btn" style="background:var(--red)" id="confirm-reset-btn">Yes, reset</button>
     <button class="overlay-btn secondary" id="cancel-reset-btn">Cancel</button>
+  </div>
+</div>
+
+<!-- Reset season stats confirmation overlay -->
+<div class="overlay" id="reset-season-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Reset all stats?</div>
+    <div class="overlay-sub">This will zero out every player's season minutes and appearances. It cannot be undone.</div>
+    <button class="overlay-btn" style="background:var(--red)" id="confirm-reset-season-btn">Yes, reset stats</button>
+    <button class="overlay-btn secondary" id="cancel-reset-season-btn">Cancel</button>
   </div>
 </div>
 
