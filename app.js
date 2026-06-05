@@ -866,6 +866,7 @@ function resetMatchState() {
   timerStartedAt     = null;
   secondsAtLastStart = 0;
   subLog      = [];
+  renderSubLog();
   pendingOn   = null;
   stagedSubs  = [];
   matchOver         = false;
