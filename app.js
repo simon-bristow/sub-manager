@@ -379,7 +379,7 @@ function renderSetupZones() {
 
   ['pitch','bench','absent'].forEach(group => {
     const el = group === 'pitch' ? pitchCards : group === 'bench' ? benchCards : absentCards;
-    roster.filter(p => p.group === group && p.name !== gkName).forEach(p => {
+    roster.filter(p => p.group === group && p.name !== gkName).sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
       el.appendChild(makeRosterCard(p.name, group));
     });
   });
