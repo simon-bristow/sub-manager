@@ -47,6 +47,11 @@
   <div class="create-team-divider"><span>New team</span></div>
   <div class="create-team-form">
     <input id="new-team-input" class="create-team-input" type="text" placeholder="Team name…">
+    <label class="logo-upload-btn" title="Add logo (optional)">
+      <input type="file" id="team-logo-input" accept="image/*" style="display:none">
+      <span id="team-logo-status">🖼</span>
+      <img id="team-logo-preview" style="display:none;width:24px;height:24px;object-fit:contain;border-radius:4px">
+    </label>
     <button id="create-team-btn" class="create-team-btn">Create</button>
   </div>
   <div class="create-team-error" id="create-team-error"></div>
@@ -56,10 +61,11 @@
 <div id="match-setup-screen" style="display:none">
   <div class="setup-header">
     <button class="logo-btn" onclick="openAbout()"><img id="setup-logo-match" class="setup-logo" alt="CGFC"></button>
-    <div>
+    <div class="setup-header-text">
       <div class="setup-title">Match Setup</div>
       <div class="setup-sub" id="match-setup-team-name"></div>
     </div>
+    <button class="change-team-btn" id="change-team-btn">← Teams</button>
   </div>
 
   <div class="match-config">
@@ -260,7 +266,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.35</div>
+    <div class="about-version">v0.46</div>
     <div class="about-user" id="about-user"></div>
     <div class="about-team" id="about-team-name"></div>
     <button class="about-signout-btn" id="about-signout-btn">Sign out</button>
@@ -319,6 +325,27 @@
     <div class="overlay-sub">This will zero out every player's season minutes and appearances. It cannot be undone.</div>
     <button class="overlay-btn" style="background:var(--red)" id="confirm-reset-season-btn">Yes, reset stats</button>
     <button class="overlay-btn secondary" id="cancel-reset-season-btn">Cancel</button>
+  </div>
+</div>
+
+<!-- Rename team overlay -->
+<div class="overlay" id="rename-team-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Rename Team</div>
+    <input id="rename-team-input" type="text" class="new-player-input" style="margin-bottom:12px;display:block" placeholder="New team name…">
+    <div class="error-msg" id="rename-team-error" style="margin-bottom:12px"></div>
+    <button class="overlay-btn" id="confirm-rename-team-btn">Save</button>
+    <button class="overlay-btn secondary" id="cancel-rename-team-btn">Cancel</button>
+  </div>
+</div>
+
+<!-- Delete team overlay -->
+<div class="overlay" id="delete-team-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">Delete <span id="delete-team-name-label"></span>?</div>
+    <div class="overlay-sub">This will permanently delete the team, its roster, and all season stats. This cannot be undone.</div>
+    <button class="overlay-btn" style="background:var(--red)" id="confirm-delete-team-btn">Yes, delete team</button>
+    <button class="overlay-btn secondary" id="cancel-delete-team-btn">Cancel</button>
   </div>
 </div>
 

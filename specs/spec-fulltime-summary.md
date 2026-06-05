@@ -10,8 +10,8 @@ At the end of the match, show the coach a clear breakdown of how much time each 
 
 The Full Time Summary overlay appears automatically when:
 
-- The timer reaches **40:00** in the 2nd half, **or**
-- The coach manually taps the **F/T** button during the 2nd half
+- The timer reaches the configured half duration in the final period, **or**
+- The coach manually taps the **F/T** button during the final period
 
 ---
 
@@ -30,7 +30,7 @@ The Full Time Summary overlay appears automatically when:
 │  ...                                │
 │  Sol              0:00  ░░░░░░░░░░  │
 │                                     │
-│         [ New Match ]               │
+│    [ Season Stats → ]  [ New Match ]│
 └─────────────────────────────────────┘
 ```
 
@@ -50,7 +50,7 @@ The Full Time Summary overlay appears automatically when:
 
 - Players are sorted by **time on pitch descending** (most played at top)
 - All players included in the match (Starting + Bench) appear in the table
-- Absent players are excluded
+- Squad (pool) players are excluded
 
 ---
 
@@ -66,14 +66,20 @@ The Full Time Summary overlay appears automatically when:
 ## Scrolling
 
 - The overlay card scrolls vertically if the squad is large enough that all rows don't fit on screen
-- The "New Match" button remains accessible by scrolling to the bottom
+- The action buttons remain accessible by scrolling to the bottom
 
 ---
 
-## New Match
+## Actions
 
-- Tapping **New Match** reloads the app, returning to the Squad Setup screen
-- All match data is discarded
+- **Season Stats →** — navigates to the Season Stats screen to view cumulative data; match stats are written to Firestore before navigating
+- **New Match** — reloads the app, returning to the Match Setup screen; all match data is discarded
+
+---
+
+## Season Stat Write-Back
+
+When full time is reached, each player who participated (Starting + Bench) has their `timeOnPitch` (converted to whole minutes) and an appearance increment of 1 written to their Firestore document. This happens automatically on full-time trigger.
 
 ---
 

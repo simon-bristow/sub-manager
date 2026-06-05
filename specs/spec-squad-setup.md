@@ -10,13 +10,11 @@ A compact summary banner sits beneath the title showing the chosen match format,
 
 ---
 
-## Default Squad
+## Squad / Roster
 
-A fixed roster of 17 named players is pre-loaded each session:
+The team's roster is loaded from Firestore for the authenticated team. Additional fill-in players can be added during setup.
 
-> Conrad, Sam, Noah, Arlo, Eoin, Cooper, Hobie, Tom, Harry, Oak, Cohen, Akira, Hamish, Amina, Otis, Tate, Sol
-
-All players begin in the **Absent** column on load. The coach drags each player to their correct column for the day.
+All players begin in the **Squad** column on load. The coach drags each player to their correct column for the day.
 
 ---
 
@@ -28,7 +26,9 @@ Three columns fill the screen between the header and the bottom controls:
 |---|---|---|
 | Starting 11 | Green tint | Contains GK slot + outfield player cards; shows player count |
 | Bench | Blue tint | Shows player count |
-| Squad | Muted grey | Pool of players available but not assigned to Starting/Bench; shows count |
+| Squad | Muted grey | Pool of players not assigned to Starting/Bench; shows count |
+
+Players within each column are displayed **sorted alphabetically** by name.
 
 ### GK Slot
 
@@ -53,11 +53,19 @@ Three columns fill the screen between the header and the bottom controls:
 
 ---
 
+## Long-Press to Remove Player
+
+- **Long-press** (600ms hold) on any roster card in the Squad column opens a confirmation overlay: *"Remove this player from the squad? Their season stats will also be deleted."*
+- Confirming removes the player from the local roster and deletes their Firestore document (including season stats)
+- Cancelling closes the overlay with no change
+
+---
+
 ## Validation
 
 - At least 1 player must be in the Starting column to enable **Start Match**
-- No upper limit is enforced on the Starting column (coach's discretion for reduced-format games), though 11 is standard
-- No validation is applied to the Bench or Absent columns
+- No upper limit is enforced on the Starting column (coach's discretion for reduced-format games), though the configured team size is standard
+- No validation is applied to the Bench or Squad columns
 
 ---
 
@@ -66,20 +74,20 @@ Three columns fill the screen between the header and the bottom controls:
 - Tapping **Start Match** transitions directly to the Match Screen
 - Players in the Starting column become **on pitch**
 - Players in the Bench column become **on bench**
-- Players in the Absent column are excluded entirely from the match
+- Players in the Squad column are excluded entirely from the match
 
 ---
 
 ## Match Configuration
 
-Above the column zones, two button-group selectors capture match format:
+Above the column zones, button-group selectors (on the Match Setup screen) capture match format:
 
 - **Halves**: `1` or `2` (default 2)
 - **Mins/half**: `20`, `30`, `40`, `45`, or a custom value typed into the inline `…` text field (default 45)
-- **Team size**: `5`, `7`, `9`, `11`, or a custom value typed into the inline `…` text field (default 11) — caters for futsal, 7-a-side, 9-a-side, full 11-a-side, and anything in between
+- **Team size**: `5`, `7`, `9`, `11`, or a custom value typed into the inline `…` text field (default 11)
 - **Sub alert**: `5`, `10`, `15`, `20`, or a custom value (minutes between automatic substitution reminders, default 10)
 
-Typing into a custom field deselects all preset buttons in that row and highlights the field instead. Typing a value re-syncs immediately as you type.
+Match config values are **persisted to localStorage** so the last-used settings are pre-filled on next session.
 
 The Starting column header updates immediately (e.g. "Starting 5" for futsal) and caps drops at the chosen size.
 
@@ -88,11 +96,12 @@ Selected option highlights in green. Values are applied when **Start Match** is 
 ## Adding Fill-In Players
 
 - A text input and **+** button sit below the three columns
-- Typing a name and tapping **+** (or pressing Enter) adds the player to the Absent column
+- Typing a name and tapping **+** (or pressing Enter) adds the player to the Squad column
 - Fill-in players can then be dragged into Starting 11 or Bench like any regular player
 - Duplicate names are rejected with an error message
 
 ## Header
 
-- Displays the team logo (Castlemaine Goldfields FC) top-left
-- Displays app title "Sub Manager" and subtitle "Drag players to assign roles"
+- Displays the team logo (top-left)
+- Displays app title "Sub Manager" and the team name
+- Subtitle: "Drag players to assign roles"

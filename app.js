@@ -2,7 +2,7 @@ import { initializeApp }                         from 'https://www.gstatic.com/f
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc,
-  query, where, orderBy, increment, writeBatch, serverTimestamp }
+  query, where, orderBy, increment, writeBatch, serverTimestamp, updateDoc }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.js';
 
@@ -12,9 +12,19 @@ const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
 
 // ─── App State ────────────────────────────────────────────────────────────────
-let currentUser   = null;
+let currentUser     = null;
 let currentTeamId   = null;
 let currentTeamName = null;
+let currentTeamLogo = null;
+
+function applyTeamLogo(src) {
+  currentTeamLogo = src || null;
+  ['setup-logo-match', 'setup-logo', 'about-logo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && src) el.src = src;
+  });
+  document.querySelectorAll('.team-logo').forEach(el => { if (src) el.src = src; });
+}
 
 // Match config
 const CONFIG_KEY = 'submanager_matchconfig';
@@ -89,7 +99,7 @@ onAuthStateChanged(auth, async user => {
         showScreen('team-select-screen');
         renderTeamSelectScreen([]);
       } else if (teams.length === 1) {
-        await selectTeam(teams[0].id, teams[0].name);
+        await selectTeam(teams[0].id, teams[0].name, teams[0].logoDataUrl || null);
       } else {
         showScreen('team-select-screen');
         renderTeamSelectScreen(teams);
@@ -116,12 +126,21 @@ document.getElementById('sign-in-btn').onclick = async () => {
 
 async function doSignOut() {
   await signOut(auth);
-  currentUser   = null;
+  currentUser     = null;
   currentTeamId   = null;
   currentTeamName = null;
+  currentTeamLogo = null;
   roster = [];
   showScreen('login-screen');
 }
+
+async function goToTeamSelect() {
+  const teams = await loadUserTeams(currentUser.uid);
+  showScreen('team-select-screen');
+  renderTeamSelectScreen(teams);
+}
+
+document.getElementById('change-team-btn').onclick = goToTeamSelect;
 
 // ─── Team Management ──────────────────────────────────────────────────────────
 async function loadUserTeams(uid) {
@@ -139,18 +158,70 @@ function renderTeamSelectScreen(teams) {
     listEl.innerHTML = '';
   } else {
     listEl.innerHTML = teams.map(t => `
-      <div class="team-card" data-id="${t.id}" data-name="${escHtml(t.name)}">
-        <span class="team-card-name">${escHtml(t.name)}</span>
-        <span class="team-card-arrow">›</span>
+      <div class="team-card">
+        <button class="team-card-select" data-id="${t.id}" data-name="${escHtml(t.name)}" data-logo="${escHtml(t.logoDataUrl || '')}">
+          ${t.logoDataUrl ? `<img class="team-card-logo" src="${escHtml(t.logoDataUrl)}" alt="">` : ''}
+          <span class="team-card-name">${escHtml(t.name)}</span>
+          <span class="team-card-arrow">›</span>
+        </button>
+        <div class="team-card-actions">
+          <button class="team-action-btn" data-action="stats"  data-id="${t.id}" data-name="${escHtml(t.name)}" data-logo="${escHtml(t.logoDataUrl || '')}">Stats</button>
+          <button class="team-action-btn" data-action="rename" data-id="${t.id}" data-name="${escHtml(t.name)}">Rename</button>
+          <button class="team-action-btn danger" data-action="delete" data-id="${t.id}" data-name="${escHtml(t.name)}">Delete</button>
+        </div>
       </div>`).join('');
-    listEl.querySelectorAll('.team-card').forEach(card => {
-      card.onclick = () => selectTeam(card.dataset.id, card.dataset.name);
+
+    listEl.querySelectorAll('.team-card-select').forEach(btn => {
+      btn.onclick = () => selectTeam(btn.dataset.id, btn.dataset.name, btn.dataset.logo || null);
+    });
+    listEl.querySelectorAll('.team-action-btn').forEach(btn => {
+      btn.onclick = () => {
+        if (btn.dataset.action === 'stats')  viewTeamSeasonStats(btn.dataset.id, btn.dataset.name, btn.dataset.logo || null);
+        if (btn.dataset.action === 'rename') openRenameTeam(btn.dataset.id, btn.dataset.name);
+        if (btn.dataset.action === 'delete') openDeleteTeam(btn.dataset.id, btn.dataset.name);
+      };
     });
   }
 
   document.getElementById('create-team-error').textContent = '';
   document.getElementById('new-team-input').value = '';
 }
+
+// ─── Logo upload ──────────────────────────────────────────────────────────────
+let pendingLogoDataUrl = null;
+
+function resizeImageToDataUrl(file, maxPx = 128) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
+      else       { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+document.getElementById('team-logo-input').onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    pendingLogoDataUrl = await resizeImageToDataUrl(file);
+    document.getElementById('team-logo-status').style.display  = 'none';
+    const preview = document.getElementById('team-logo-preview');
+    preview.src = pendingLogoDataUrl;
+    preview.style.display = 'inline';
+  } catch (err) {
+    console.error('Logo resize failed', err);
+  }
+};
 
 document.getElementById('create-team-btn').onclick = async () => {
   const input = document.getElementById('new-team-input');
@@ -159,12 +230,14 @@ document.getElementById('create-team-btn').onclick = async () => {
   if (!name) { errEl.textContent = 'Please enter a team name.'; return; }
   errEl.textContent = '';
   try {
-    const ref = await addDoc(collection(db, 'teams'), {
-      name,
-      managerId: currentUser.uid,
-      createdAt: serverTimestamp(),
-    });
-    await selectTeam(ref.id, name);
+    const teamData = { name, managerId: currentUser.uid, createdAt: serverTimestamp() };
+    if (pendingLogoDataUrl) teamData.logoDataUrl = pendingLogoDataUrl;
+    const ref = await addDoc(collection(db, 'teams'), teamData);
+    pendingLogoDataUrl = null;
+    document.getElementById('team-logo-status').style.display  = '';
+    document.getElementById('team-logo-preview').style.display = 'none';
+    document.getElementById('team-logo-input').value = '';
+    await selectTeam(ref.id, name, teamData.logoDataUrl || null);
   } catch (e) {
     errEl.textContent = 'Could not create team. Please try again.';
     console.error(e);
@@ -177,14 +250,93 @@ document.getElementById('new-team-input').addEventListener('keydown', e => {
 
 document.getElementById('team-select-signout-btn').onclick = doSignOut;
 
-async function selectTeam(teamId, teamName) {
+// ─── Rename team ──────────────────────────────────────────────────────────────
+let renameTeamId = null;
+
+function openRenameTeam(teamId, currentName) {
+  renameTeamId = teamId;
+  const input = document.getElementById('rename-team-input');
+  input.value = currentName;
+  document.getElementById('rename-team-error').textContent = '';
+  document.getElementById('rename-team-overlay').classList.add('visible');
+  setTimeout(() => input.focus(), 100);
+}
+
+document.getElementById('cancel-rename-team-btn').onclick = () => {
+  document.getElementById('rename-team-overlay').classList.remove('visible');
+  renameTeamId = null;
+};
+
+document.getElementById('rename-team-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('confirm-rename-team-btn').click();
+});
+
+document.getElementById('confirm-rename-team-btn').onclick = async () => {
+  const name = document.getElementById('rename-team-input').value.trim();
+  const errEl = document.getElementById('rename-team-error');
+  if (!name) { errEl.textContent = 'Please enter a name.'; return; }
+  errEl.textContent = '';
+  try {
+    await updateDoc(doc(db, 'teams', renameTeamId), { name });
+    document.getElementById('rename-team-overlay').classList.remove('visible');
+    renameTeamId = null;
+    const teams = await loadUserTeams(currentUser.uid);
+    renderTeamSelectScreen(teams);
+  } catch (e) {
+    errEl.textContent = 'Could not rename. Please try again.';
+    console.error(e);
+  }
+};
+
+// ─── Delete team ──────────────────────────────────────────────────────────────
+let deleteTeamId = null;
+
+function openDeleteTeam(teamId, teamName) {
+  deleteTeamId = teamId;
+  document.getElementById('delete-team-name-label').textContent = teamName;
+  document.getElementById('delete-team-overlay').classList.add('visible');
+}
+
+document.getElementById('cancel-delete-team-btn').onclick = () => {
+  document.getElementById('delete-team-overlay').classList.remove('visible');
+  deleteTeamId = null;
+};
+
+document.getElementById('confirm-delete-team-btn').onclick = async () => {
+  document.getElementById('delete-team-overlay').classList.remove('visible');
+  showToast('Deleting…');
+  try {
+    const playersSnap = await getDocs(collection(db, 'teams', deleteTeamId, 'players'));
+    const batch = writeBatch(db);
+    playersSnap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(doc(db, 'teams', deleteTeamId));
+    await batch.commit();
+    deleteTeamId = null;
+    showToast('Deleted ✓');
+    const teams = await loadUserTeams(currentUser.uid);
+    renderTeamSelectScreen(teams);
+  } catch (e) {
+    console.error(e);
+    showToast('Delete failed');
+  }
+};
+
+async function selectTeam(teamId, teamName, logoDataUrl) {
   currentTeamId   = teamId;
   currentTeamName = teamName;
+  applyTeamLogo(logoDataUrl || null);
   const players   = await loadPlayersFromFirestore(teamId);
   roster = players.map(p => ({ name: p.name, group: 'absent', firestoreId: p.id }));
   resetMatchState();
   showScreen('match-setup-screen');
   buildSetup();
+}
+
+async function viewTeamSeasonStats(teamId, teamName, logoDataUrl) {
+  currentTeamId   = teamId;
+  currentTeamName = teamName;
+  applyTeamLogo(logoDataUrl || null);
+  await showSeasonScreen();
 }
 
 // ─── Player Persistence ───────────────────────────────────────────────────────
@@ -288,8 +440,14 @@ async function showSeasonScreen() {
   }
 }
 
-document.getElementById('season-back-btn').onclick = () => {
-  showScreen('match-setup-screen');
+document.getElementById('season-back-btn').onclick = async () => {
+  const teams = await loadUserTeams(currentUser.uid);
+  if (teams.length > 1) {
+    showScreen('team-select-screen');
+    renderTeamSelectScreen(teams);
+  } else {
+    showScreen('match-setup-screen');
+  }
 };
 document.getElementById('season-new-match-btn').onclick = () => {
   resetMatchState();

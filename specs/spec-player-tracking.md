@@ -92,4 +92,4 @@ The match screen header (sticky, always visible) shows:
 - Team logo (top-left)
 - Half label ("1st Half" / "2nd Half")
 - Live match clock (`MM:SS`)
-- Control buttons: ▶/⏸, H/T (or F/T), ✕
+- Control buttons: ▶/⏸ (always green), H/T (or F/T), ✕

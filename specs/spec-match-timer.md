@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provide a live clock that tracks match time across two 40-minute halves, giving the coach an accurate reference for when substitutions are made.
+Provide a live clock that tracks match time across one or two halves, giving the coach an accurate reference for when substitutions are made.
 
 ---
 
@@ -16,7 +16,7 @@ Provide a live clock that tracks match time across two 40-minute halves, giving 
 
 ## Match Configuration
 
-Set on the Squad Setup screen before kickoff:
+Set on the Match Setup screen before kickoff:
 
 | Setting | Options | Default |
 |---|---|---|
@@ -36,6 +36,7 @@ When **1 period** is selected, the **H/T** button is replaced by **F/T**, the pe
 | Full Time | F/T | (2nd half only) Stops the clock and opens the Full Time overlay |
 | Reset | ✕ | Opens the Reset confirmation dialog |
 
+- The ▶/⏸ button is **always green** regardless of timer state
 - In the 1st half, the third button reads **H/T**
 - At the start of the 2nd half, it switches to **F/T**
 - After full time, the ▶ button is disabled
@@ -55,8 +56,9 @@ When **1 period** is selected, the **H/T** button is replaced by **F/T**, the pe
 - Shown between halves
 - Displays: "Half Time"
 - Options:
-  - **Start 2nd Half** — resets the display clock to 00:00 and resumes timing
-  - **Stay at Half Time** — dismisses the overlay but keeps the timer paused
+  - **Start 2nd Half** — resets the display clock to 00:00 and begins the second half
+  - **Resume 1st Half** — dismisses the overlay and resumes the timer in the 1st half (e.g. if triggered accidentally)
+  - **Stay at Half Time** — dismisses the overlay but keeps the timer paused at half time
 - The clock label updates from "1st Half" to "2nd Half" when the 2nd half begins
 
 ---
@@ -73,12 +75,14 @@ When **1 period** is selected, the **H/T** button is replaced by **F/T**, the pe
 
 - The interval is configured at setup (Sub alert row — default 10 min)
 - The countdown ticks down from the configured interval; pauses when the match timer pauses
+- The sub alert counter **resets to the configured interval** when the 2nd half starts
 - When the countdown is within the **final minute** (≤ 60 sec), it turns **red and bold** as a warning
 - When it hits 0:
   - The countdown turns amber and pulses, reading **SUB NOW!**
   - A short beep plays (where Web Audio is supported)
   - The phone vibrates briefly (where supported)
 - After 4 seconds the alert clears and the countdown resets to the configured interval, starting again from the current match time
+- A **✕ (dismiss)** button on the sub alert row allows the coach to suppress sub alerts for the remainder of the match; tapping it hides the row and disables further alerts
 
 ---
 
