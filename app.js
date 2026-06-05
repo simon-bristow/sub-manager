@@ -451,6 +451,7 @@ function attachCardListeners(card) {
 
   card.setAttribute('draggable', 'true');
   card.addEventListener('dragstart', e => {
+    clearTimeout(card._longPressTimer);
     dragName = name;
     dragSourceCard = card;
     card.classList.add('is-dragging');
@@ -462,11 +463,25 @@ function attachCardListeners(card) {
     dragSourceCard = null;
   });
 
-  card.addEventListener('click', () => tapMovePlayerToPitch(name));
-  card.addEventListener('touchstart',  onTouchStart, { passive: false });
-  card.addEventListener('touchmove',   onTouchMove,  { passive: false });
-  card.addEventListener('touchend',    onTouchEnd);
-  card.addEventListener('touchcancel', onTouchEnd);
+  // Long-press to remove player
+  let longPressFired = false;
+  const startLongPress = () => {
+    longPressFired = false;
+    card._longPressTimer = setTimeout(() => {
+      longPressFired = true;
+      openRemoveSquadPlayer(name);
+    }, 600);
+  };
+  const cancelLongPress = () => clearTimeout(card._longPressTimer);
+
+  card.addEventListener('click', () => { if (!longPressFired) tapMovePlayerToPitch(name); longPressFired = false; });
+  card.addEventListener('mousedown',   startLongPress);
+  card.addEventListener('mouseup',     cancelLongPress);
+  card.addEventListener('mouseleave',  cancelLongPress);
+  card.addEventListener('touchstart',  e => { startLongPress(); onTouchStart(e); }, { passive: false });
+  card.addEventListener('touchmove',   e => { cancelLongPress(); onTouchMove(e); },  { passive: false });
+  card.addEventListener('touchend',    e => { cancelLongPress(); onTouchEnd(e); });
+  card.addEventListener('touchcancel', e => { cancelLongPress(); onTouchEnd(e); });
 }
 
 function tapMovePlayerToPitch(name) {
@@ -603,6 +618,36 @@ async function addFillInPlayer() {
   renderSetupZones();
   setupDragDrop();
 }
+
+// ─── Remove player from squad ────────────────────────────────────────────────
+let removeSquadPlayerName = null;
+
+function openRemoveSquadPlayer(name) {
+  removeSquadPlayerName = name;
+  document.getElementById('remove-squad-player-title').textContent = name;
+  document.getElementById('remove-squad-player-overlay').classList.add('visible');
+}
+
+document.getElementById('cancel-remove-squad-player-btn').onclick = () => {
+  document.getElementById('remove-squad-player-overlay').classList.remove('visible');
+  removeSquadPlayerName = null;
+};
+
+document.getElementById('confirm-remove-squad-player-btn').onclick = async () => {
+  const name = removeSquadPlayerName;
+  document.getElementById('remove-squad-player-overlay').classList.remove('visible');
+  removeSquadPlayerName = null;
+  if (!name) return;
+
+  const player = roster.find(p => p.name === name);
+  if (player?.firestoreId) {
+    try { await removePlayerFromTeam(player.firestoreId); } catch (e) { console.error(e); }
+  }
+  if (name === gkName) gkName = null;
+  roster = roster.filter(p => p.name !== name);
+  renderSetupZones();
+  setupDragDrop();
+};
 
 // ─── Start Match ─────────────────────────────────────────────────────────────
 document.getElementById('start-btn').onclick = () => {
