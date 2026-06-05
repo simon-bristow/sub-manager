@@ -1,10 +1,8 @@
-// Replace these values with your Firebase project configuration.
-// Get them from: Firebase Console → Project Settings → Your apps → Web app → SDK setup and configuration
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAawVKpw7O_mLUv0zufs-0OaXr4dvFw-3I",
+  authDomain: "sub-manager-eb2b2.firebaseapp.com",
+  projectId: "sub-manager-eb2b2",
+  storageBucket: "sub-manager-eb2b2.firebasestorage.app",
+  messagingSenderId: "1059757889250",
+  appId: "1:1059757889250:web:546e23cf8fb0b2fa1530bb"
 };
