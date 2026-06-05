@@ -781,7 +781,7 @@ function tick() {
     timerRunning = false;
     clearInterval(intervalId);
     document.getElementById('timer-btn').textContent = '▶';
-    document.getElementById('timer-btn').classList.remove('green');
+    // timer-btn stays green always
 
     if (half < NUM_PERIODS) {
       document.getElementById('halftime-overlay').classList.add('visible');
@@ -852,7 +852,7 @@ document.getElementById('half-btn').onclick = () => {
     timerRunning = false;
     clearInterval(intervalId);
     document.getElementById('timer-btn').textContent = '▶';
-    document.getElementById('timer-btn').classList.remove('green');
+    // timer-btn stays green always
     document.getElementById('halftime-overlay').classList.add('visible');
   } else {
     timerRunning = false;
@@ -872,12 +872,22 @@ document.getElementById('start-second-btn').onclick = () => {
   timerStartedAt     = Date.now();
   secondsAtLastStart = matchSeconds;
   document.getElementById('timer-btn').textContent = '⏸';
-  document.getElementById('timer-btn').classList.add('green');
+
   intervalId = setInterval(tick, 1000);
 };
 
 document.getElementById('stay-halftime-btn').onclick = () => {
   document.getElementById('halftime-overlay').classList.remove('visible');
+};
+
+document.getElementById('resume-first-half-btn').onclick = () => {
+  document.getElementById('halftime-overlay').classList.remove('visible');
+  // Resume timer from where it was
+  timerRunning       = true;
+  timerStartedAt     = Date.now();
+  secondsAtLastStart = matchSeconds;
+  document.getElementById('timer-btn').textContent = '⏸';
+  intervalId = setInterval(tick, 1000);
 };
 
 function endMatch() {
