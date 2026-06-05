@@ -167,6 +167,7 @@ function renderTeamSelectScreen(teams) {
         <div class="team-card-actions">
           <button class="team-action-btn" data-action="stats"  data-id="${t.id}" data-name="${escHtml(t.name)}" data-logo="${escHtml(t.logoDataUrl || '')}">Stats</button>
           <button class="team-action-btn" data-action="rename" data-id="${t.id}" data-name="${escHtml(t.name)}">Rename</button>
+          <button class="team-action-btn" data-action="logo"   data-id="${t.id}">Logo</button>
           <button class="team-action-btn danger" data-action="delete" data-id="${t.id}" data-name="${escHtml(t.name)}">Delete</button>
         </div>
       </div>`).join('');
@@ -178,6 +179,7 @@ function renderTeamSelectScreen(teams) {
       btn.onclick = () => {
         if (btn.dataset.action === 'stats')  viewTeamSeasonStats(btn.dataset.id, btn.dataset.name, btn.dataset.logo || null);
         if (btn.dataset.action === 'rename') openRenameTeam(btn.dataset.id, btn.dataset.name);
+        if (btn.dataset.action === 'logo')   openChangeTeamLogo(btn.dataset.id);
         if (btn.dataset.action === 'delete') openDeleteTeam(btn.dataset.id, btn.dataset.name);
       };
     });
@@ -249,6 +251,30 @@ document.getElementById('new-team-input').addEventListener('keydown', e => {
 });
 
 document.getElementById('team-select-signout-btn').onclick = doSignOut;
+
+// ─── Change team logo ─────────────────────────────────────────────────────────
+function openChangeTeamLogo(teamId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    showToast('Saving logo…');
+    try {
+      const dataUrl = await resizeImageToDataUrl(file);
+      await updateDoc(doc(db, 'teams', teamId), { logoDataUrl: dataUrl });
+      if (currentTeamId === teamId) applyTeamLogo(dataUrl);
+      showToast('Logo updated ✓');
+      const teams = await loadUserTeams(currentUser.uid);
+      renderTeamSelectScreen(teams);
+    } catch (err) {
+      console.error(err);
+      showToast('Logo update failed');
+    }
+  };
+  input.click();
+}
 
 // ─── Rename team ──────────────────────────────────────────────────────────────
 let renameTeamId = null;
