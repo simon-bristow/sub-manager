@@ -58,7 +58,7 @@
     <button class="logo-btn" onclick="openAbout()"><img id="setup-logo-match" class="setup-logo" alt="CGFC"></button>
     <div>
       <div class="setup-title">Match Setup</div>
-      <div class="setup-sub">Choose match format</div>
+      <div class="setup-sub" id="match-setup-team-name"></div>
     </div>
   </div>
 
@@ -111,6 +111,7 @@
     <button class="logo-btn" onclick="openAbout()"><img id="setup-logo" class="setup-logo" alt="CGFC"></button>
     <div style="flex:1;min-width:0">
       <div class="setup-title">Squad Setup</div>
+      <div class="setup-sub" id="squad-setup-team-name"></div>
       <div class="match-summary">
         <span id="match-summary-text"></span>
         <button class="edit-link" id="back-to-match-setup-btn">Edit</button>
@@ -119,6 +120,10 @@
   </div>
 
   <div class="setup-zones">
+    <div class="setup-zone" data-zone="absent">
+      <div class="zone-header">Absent <span class="zone-count" id="absent-count-setup"></span></div>
+      <div id="absent-cards" class="zone-cards"></div>
+    </div>
     <div class="setup-zone" data-zone="pitch">
       <div class="zone-header">
         <span id="pitch-zone-label">Starting 11</span>
@@ -132,10 +137,6 @@
     <div class="setup-zone" data-zone="bench">
       <div class="zone-header">Bench <span class="zone-count" id="bench-count-setup"></span></div>
       <div id="bench-cards" class="zone-cards"></div>
-    </div>
-    <div class="setup-zone" data-zone="absent">
-      <div class="zone-header">Absent <span class="zone-count" id="absent-count-setup"></span></div>
-      <div id="absent-cards" class="zone-cards"></div>
     </div>
   </div>
 
@@ -167,7 +168,7 @@
       <button class="ctrl-btn" id="add-player-btn" title="Add late player">+</button>
       <button class="ctrl-btn" id="half-btn">H/T</button>
       <button class="ctrl-btn green" id="timer-btn">▶</button>
-      <button class="ctrl-btn" id="reset-btn">↺</button>
+      <button class="ctrl-btn" id="reset-btn" style="color:var(--red);font-weight:700">✕</button>
     </div>
   </div>
 
@@ -186,13 +187,6 @@
   <div class="lists">
     <div class="list-section">
       <div class="list-header">
-        <span class="list-title">Pitch</span>
-        <span class="list-count" id="pitch-count"></span>
-      </div>
-      <div class="player-cards" id="pitch-list"></div>
-    </div>
-    <div class="list-section">
-      <div class="list-header">
         <span class="list-title">Bench</span>
         <span class="list-count" id="bench-count"></span>
       </div>
@@ -200,7 +194,14 @@
     </div>
     <div class="list-section">
       <div class="list-header">
-        <span class="list-title">Subs</span>
+        <span class="list-title">Pitch</span>
+        <span class="list-count" id="pitch-count"></span>
+      </div>
+      <div class="player-cards" id="pitch-list"></div>
+    </div>
+    <div class="list-section">
+      <div class="list-header">
+        <span class="list-title">Sub log</span>
         <span class="list-count" id="sub-count"></span>
       </div>
       <div class="sub-log-entries" id="sub-log-entries"></div>

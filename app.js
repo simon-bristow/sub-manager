@@ -287,6 +287,9 @@ function buildSetup() {
     document.getElementById('setup-logo').src = matchLogo.src;
     document.getElementById('setup-logo-match').src = matchLogo.src;
   }
+  const name = currentTeamName || '';
+  document.getElementById('match-setup-team-name').textContent = name;
+  document.getElementById('squad-setup-team-name').textContent = name;
   renderSetupZones();
   setupDragDrop();
   updateMatchSummary();
