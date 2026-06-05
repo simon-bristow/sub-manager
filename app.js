@@ -865,6 +865,7 @@ document.getElementById('start-second-btn').onclick = () => {
   document.getElementById('halftime-overlay').classList.remove('visible');
   half            = 2;
   halfStartOffset = matchSeconds;
+  nextAlertAt     = matchSeconds + ALERT_INTERVAL;
   document.getElementById('half-label').textContent = '2nd Half';
   document.getElementById('half-btn').textContent   = 'F/T';
   timerRunning       = true;
