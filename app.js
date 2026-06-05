@@ -1036,13 +1036,21 @@ document.getElementById('half-btn').onclick = () => {
     timerRunning = false;
     clearInterval(intervalId);
     document.getElementById('timer-btn').textContent = '▶';
-    // timer-btn stays green always
     document.getElementById('halftime-overlay').classList.add('visible');
   } else {
-    timerRunning = false;
-    clearInterval(intervalId);
-    endMatch();
+    document.getElementById('fulltime-confirm-overlay').classList.add('visible');
   }
+};
+
+document.getElementById('confirm-ft-btn').onclick = () => {
+  document.getElementById('fulltime-confirm-overlay').classList.remove('visible');
+  timerRunning = false;
+  clearInterval(intervalId);
+  endMatch();
+};
+
+document.getElementById('cancel-ft-btn').onclick = () => {
+  document.getElementById('fulltime-confirm-overlay').classList.remove('visible');
 };
 
 document.getElementById('start-second-btn').onclick = () => {

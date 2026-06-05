@@ -266,7 +266,7 @@
     <img id="about-logo" class="about-logo" alt="CGFC">
     <div class="about-app-name">Sub Manager</div>
     <div class="about-copy">© Simon Bristow 2026</div>
-    <div class="about-version">v0.47</div>
+    <div class="about-version">v0.48</div>
     <div class="about-user" id="about-user"></div>
     <div class="about-team" id="about-team-name"></div>
     <button class="about-signout-btn" id="about-signout-btn">Sign out</button>
@@ -346,6 +346,16 @@
     <div class="overlay-sub">This will permanently delete the team, its roster, and all season stats. This cannot be undone.</div>
     <button class="overlay-btn" style="background:var(--red)" id="confirm-delete-team-btn">Yes, delete team</button>
     <button class="overlay-btn secondary" id="cancel-delete-team-btn">Cancel</button>
+  </div>
+</div>
+
+<!-- Full time confirmation overlay -->
+<div class="overlay" id="fulltime-confirm-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">End Match?</div>
+    <div class="overlay-sub">This will stop the clock and show the full time summary.</div>
+    <button class="overlay-btn" id="confirm-ft-btn">Yes, Full Time</button>
+    <button class="overlay-btn secondary" id="cancel-ft-btn">Cancel</button>
   </div>
 </div>
 
