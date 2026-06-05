@@ -17,7 +17,22 @@ let currentTeamId   = null;
 let currentTeamName = null;
 
 // Match config
-let matchConfig = { periods: 2, minutes: 45, teamSize: 11, alertMins: 10 };
+const CONFIG_KEY = 'submanager_matchconfig';
+const DEFAULT_CONFIG = { periods: 2, minutes: 45, teamSize: 11, alertMins: 10 };
+
+function loadMatchConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CONFIG_KEY));
+    if (saved && typeof saved === 'object') return { ...DEFAULT_CONFIG, ...saved };
+  } catch (e) { /* ignore */ }
+  return { ...DEFAULT_CONFIG };
+}
+
+function saveMatchConfig() {
+  try { localStorage.setItem(CONFIG_KEY, JSON.stringify(matchConfig)); } catch (e) { /* ignore */ }
+}
+
+let matchConfig = loadMatchConfig();
 
 // Match runtime
 let HALF_DURATION  = 45 * 60;
@@ -608,6 +623,7 @@ function setupConfigButtons(groupId, configKey, onChange) {
       btn.classList.add('selected');
       matchConfig[configKey] = parseInt(btn.dataset.value, 10);
       if (custom) custom.value = '';
+      saveMatchConfig();
       if (onChange) onChange();
     };
   });
@@ -618,9 +634,25 @@ function setupConfigButtons(groupId, configKey, onChange) {
         group.querySelectorAll('.config-btn').forEach(b => b.classList.remove('selected'));
         custom.classList.add('selected');
         matchConfig[configKey] = v;
+        saveMatchConfig();
         if (onChange) onChange();
       }
     });
+  }
+}
+
+function applyConfigToUI(groupId, configKey, customId) {
+  const group  = document.getElementById(groupId);
+  const custom = document.getElementById(customId);
+  const value  = matchConfig[configKey];
+  const preset = group.querySelector(`.config-btn[data-value="${value}"]`);
+  group.querySelectorAll('.config-btn, .config-custom').forEach(b => b.classList.remove('selected'));
+  if (preset) {
+    preset.classList.add('selected');
+    if (custom) custom.value = '';
+  } else if (custom) {
+    custom.value = value;
+    custom.classList.add('selected');
   }
 }
 
@@ -631,6 +663,12 @@ setupConfigButtons('config-team-size', 'teamSize', () => {
   updateZoneCounts();
 });
 setupConfigButtons('config-alert', 'alertMins');
+
+// Restore saved config to UI on load
+applyConfigToUI('config-periods',   'periods',  'custom-periods');
+applyConfigToUI('config-duration',  'minutes',  'custom-duration');
+applyConfigToUI('config-team-size', 'teamSize', 'custom-team-size');
+applyConfigToUI('config-alert',     'alertMins','custom-alert');
 
 // ─── Timer ────────────────────────────────────────────────────────────────────
 function formatTime(secs) {
