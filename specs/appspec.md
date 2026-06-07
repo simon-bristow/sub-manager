@@ -92,10 +92,15 @@ Accessible from the Full Time overlay ("Season Stats →") or from the Team Sele
 
 ## Authentication
 
-- Google sign-in via Firebase Auth
+- Google sign-in via Firebase Auth using `signInWithRedirect` (compatible with iOS Safari/Chrome popup restrictions)
 - On successful sign-in the user is taken to the Team Select screen
-- Sign-out is accessible from the About overlay (logo tap)
+- Sign-out is accessible from the About overlay (logo tap) or the Team Select screen
 - Auth state is observed; unauthenticated users always see the Login screen
+
+## Favicon
+
+- `favicon.png` (32×32 PNG) — tab bar icon; green ↑ and red ↓ substitution arrows on dark navy background
+- `apple-touch-icon.png` (180×180 PNG) — iOS home screen icon, referenced via `<link rel="apple-touch-icon">`
 
 ---
 
