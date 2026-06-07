@@ -1,5 +1,5 @@
 import { initializeApp }                         from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc,
   query, where, orderBy, increment, writeBatch, serverTimestamp, updateDoc }
@@ -117,12 +117,23 @@ onAuthStateChanged(auth, async user => {
 
 document.getElementById('sign-in-btn').onclick = async () => {
   document.getElementById('auth-error').textContent = '';
+  document.getElementById('sign-in-btn').disabled = true;
+  document.getElementById('sign-in-btn').textContent = 'Redirecting…';
   try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    await signInWithRedirect(auth, new GoogleAuthProvider());
   } catch (e) {
     document.getElementById('auth-error').textContent = 'Sign-in failed. Please try again.';
+    document.getElementById('sign-in-btn').disabled = false;
+    document.getElementById('sign-in-btn').textContent = 'Sign in with Google';
   }
 };
+
+// Handle redirect result on page load
+getRedirectResult(auth).catch(e => {
+  if (e?.code !== 'auth/no-current-user') {
+    document.getElementById('auth-error').textContent = 'Sign-in failed. Please try again.';
+  }
+});
 
 async function doSignOut() {
   await signOut(auth);
