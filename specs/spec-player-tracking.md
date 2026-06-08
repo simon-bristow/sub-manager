@@ -8,12 +8,12 @@ Give the coach a live, at-a-glance view of every player's current status and cum
 
 ## Match Screen Layout
 
-The match screen is divided into three columns that fill the full screen height:
+The match screen is divided into three columns (left to right) that fill the full screen height:
 
 | Column | Content |
 |---|---|
-| **Pitch** | Players currently on the field |
 | **Bench** | Players available for substitution |
+| **Pitch** | Players currently on the field |
 | **Subs** | Log of completed substitutions |
 
 All three columns are visible simultaneously without scrolling — the entire squad fits on one screen.
@@ -30,9 +30,10 @@ Each player (on pitch or bench) is shown as a compact single-line card:
 
 - **GK badge** — amber pill shown only for the designated goalkeeper
 - **Name** — left-aligned, truncated with ellipsis if too long
-- **Time** — right-aligned, shows cumulative time on pitch in `MM:SS`
-  - Green colour for players currently on pitch (actively accumulating time)
-  - Muted colour for bench players (time is frozen)
+- **Time** — right-aligned, shows cumulative time on pitch in `MM:SS`. The colour follows a **fatigue gradient** relative to the most-played player on the squad:
+  - 0–50% of max → cool blue → green
+  - 50–100% of max → green → amber → red
+  - Bench players use the same gradient (their time is frozen but their position on the scale is preserved)
 - Cards are sorted by **time on pitch descending** — most-played player always appears at the top
 
 ---
@@ -84,6 +85,27 @@ See [spec-substitutions.md](spec-substitutions.md) for full substitution interac
 - Tapping **Yes, change GK** transfers the GK badge to the new player and updates all cards
 - Tapping **Cancel** closes the popup with no change
 - A regular tap on the card still performs normal substitution selection
+
+## GK Badge Persistence
+
+- The GK designation is **per match**, not per on-pitch state
+- If the current GK is substituted off, they keep the GK badge while on the bench
+- The badge only moves via the **Change Goalkeeper** long-press flow
+- This means a backup GK coming on does **not** automatically receive the badge — the coach must long-press to transfer it explicitly
+
+## Adding a Player Mid-Match
+
+- A small **+ Add Player** button in the match header opens a confirmation overlay with a name input
+- Submitting adds the player as a new Firestore roster entry and inserts them into the live match on the **bench** with `timeOnPitch = 0`
+- They become a normal bench player — eligible for substitution on, included in the Full Time summary, and counted in season stats on full-time write-back
+- Duplicate names (case-insensitive) are rejected with an inline error
+
+## Removing a Player Mid-Match
+
+- The player options long-press sheet (the same overlay used to change GK) includes a **Remove from match** option
+- Confirming removes the player from the live match entirely: they vanish from the pitch/bench columns, are unstaged from any pending substitution, and are **excluded from the Full Time summary and the season write-back**
+- The player's Firestore roster document is **not** deleted — only their participation in this match is cancelled
+- This is intended for late no-shows or injuries discovered after kickoff
 
 ## Header
 

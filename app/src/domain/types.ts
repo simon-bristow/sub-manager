@@ -1,0 +1,80 @@
+// Core domain types for Sub Manager.
+
+export interface MatchConfig {
+  periods: 1 | 2 | 3;
+  minutes: number;
+  teamSize: number;
+  alertMins: number;
+}
+
+export const DEFAULT_CONFIG: MatchConfig = {
+  periods: 2,
+  minutes: 45,
+  teamSize: 11,
+  alertMins: 10,
+};
+
+// Roster entry — exists during squad setup.
+export interface RosterEntry {
+  name: string;
+  group: 'pitch' | 'bench' | 'absent';
+  firestoreId: string | null;
+}
+
+// In-match player.
+export interface Player {
+  id: string;
+  firestoreId: string | null;
+  name: string;
+  isGK: boolean;
+  onPitch: boolean;
+  // accumulatedTime: seconds frozen from prior on-pitch stints
+  accumulatedTime: number;
+  // lastOnAt: matchSeconds when they came on (null while on bench)
+  lastOnAt: number | null;
+  subCount: number;
+}
+
+// Substitution staging.
+export type StagedSub =
+  | { kind: 'swap'; offId: string; onId: string }
+  | { kind: 'fill'; onId: string };
+
+// Substitution log entry — one per Confirm All.
+export interface SubLogEntry {
+  minute: number;
+  pairs: { onName: string; offName: string | null }[];
+}
+
+// Firestore team document shape.
+export interface Team {
+  id: string;
+  name: string;
+  managerId: string;
+  logoDataUrl?: string;
+}
+
+// Firestore player document shape.
+export interface FirestorePlayer {
+  id: string;
+  name: string;
+  seasonMinutes: number;
+  appearances: number;
+}
+
+// Pending Firestore save (offline queue).
+export interface PendingSave {
+  matchId: string;
+  teamId: string;
+  payload: {
+    date: number;
+    halfLength: number;
+    halves: number;
+    teamSize: number;
+    playerStats: Record<string, { minutesPlayed: number; subCount: number }>;
+  };
+  playerIncrements: Record<string, { minutes: number }>;
+  attempts: number;
+  lastError?: string;
+  queuedAt: number;
+}

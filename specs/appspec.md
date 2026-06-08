@@ -4,7 +4,7 @@
 
 Sub Manager is a mobile-first web application designed to help a soccer coach manage player substitutions during a match. The primary goal is to ensure fair playing time across the squad by making it easy to track who is on the pitch, who is on the bench, and how long each player has been playing.
 
-The app uses a Firebase backend for authentication and season statistics. All match state is held in memory for the duration of a single match session.
+The app uses a Firebase backend for authentication and season statistics. Live match state is held in a local store that is persisted to `localStorage` on every change, so a phone lock, accidental refresh, or browser crash mid-match recovers seamlessly. Persisted match state is cleared on **Reset**, **New Match**, or successful **Full Time** write-back.
 
 ---
 
@@ -19,9 +19,9 @@ The app uses a Firebase backend for authentication and season statistics. All ma
 ## Key Constraints
 
 - **Phone-first**: All interactions must be comfortable on a 375px-wide touchscreen
-- **No in-match persistence**: Each match session starts fresh; match data is not saved between matches
+- **Refresh-safe match state**: Live match state is persisted to `localStorage` via Zustand's `persist` middleware, so a phone lock, accidental refresh, or browser crash recovers seamlessly
 - **Firebase backend**: Google authentication + Firestore for team roster and season stats
-- **Multi-file**: index.html + styles.css + app.js + firebase-config.js
+- **React + Vite**: React 18, TypeScript, Zustand for state, `@dnd-kit` for drag-and-drop, hosted on Firebase Hosting as a PWA
 
 ---
 
@@ -54,7 +54,7 @@ Login → Team Select → Match Setup → Squad Setup → Match (1st Half) → H
 |---|---|
 | Login | Google sign-in |
 | Team Select | Choose or create a team; links to Season Stats |
-| Match Setup | Choose halves, mins/half, team size, and sub alert frequency |
+| Match Setup | Choose halves, mins/half, team size, and sub alert frequency. Header shows team name with a "Change" link to return to Team Select. |
 | Squad Setup | Drag/tap players into Starting, Bench, or Squad pool |
 | Match Screen | Live view of pitch/bench/subs with timer and substitution controls |
 | Half Time Overlay | Pause between halves; prompt to start 2nd half or resume 1st half |
@@ -92,10 +92,16 @@ Accessible from the Full Time overlay ("Season Stats →") or from the Team Sele
 
 ## Authentication
 
-- Google sign-in via Firebase Auth using `signInWithRedirect` (compatible with iOS Safari/Chrome popup restrictions)
+- Google sign-in via Firebase Auth with a platform-aware strategy:
+  - **Standalone PWA** (home-screen app on iOS/Android): uses `signInWithPopup` — redirect flow cannot return to a standalone web app
+  - **Mobile browser** (iOS Chrome/Safari, Android): uses `signInWithRedirect` — popups open as new tabs with broken cross-tab communication
+  - **Desktop**: uses `signInWithPopup` with `signInWithRedirect` as fallback if the popup is blocked
+- `authDomain` is set to the hosting domain (`sub-manager-eb2b2.web.app`) rather than the default `firebaseapp.com` — required for redirect flow on iOS where WebKit's ITP blocks cross-origin auth cookies
+- The service worker excludes `/__/*` paths (`navigateFallbackDenylist`) so Firebase's `/__/auth/handler` callback page is served from the network, not the cached SPA shell
+- The app waits for `getRedirectResult()` to resolve before mounting React, preventing a flash of the login screen after a redirect auth flow
 - On successful sign-in the user is taken to the Team Select screen
-- Sign-out is accessible from the About overlay (logo tap) or the Team Select screen
-- Auth state is observed; unauthenticated users always see the Login screen
+- Sign-out is accessible from the Team Select screen
+- Auth state is observed via `useAuthState`; unauthenticated users always see the Login screen
 
 ## Favicon
 
@@ -108,5 +114,4 @@ Accessible from the Full Time overlay ("Season Stats →") or from the Team Sele
 
 - Score tracking
 - Player position tracking beyond GK designation
-- Suggested substitutions based on playing time
 - Multiple users per team (single-account model)

@@ -79,7 +79,19 @@ The Full Time Summary overlay appears automatically when:
 
 ## Season Stat Write-Back
 
-When full time is reached, each player who participated (Starting + Bench) has their `timeOnPitch` (converted to whole minutes) and an appearance increment of 1 written to their Firestore document. This happens automatically on full-time trigger.
+When full time is reached, each player who participated (Starting + Bench, excluding any players removed mid-match) has their `timeOnPitch` converted to whole minutes via **`Math.floor(timeOnPitch / 60)`** and incremented onto their Firestore `seasonMinutes`, alongside an `appearances` increment of 1. So a stint of 59 seconds counts as 0 added minutes; the rounding is intentional and matches the `MM:SS` display semantics.
+
+The write-back is gated by an **idempotency flag** stored on the match: even if both the final timer tick and a manual F/T tap fire in the same second, the season totals are only incremented once. The same flag prevents a re-trigger if the coach navigates away and back to the Full Time overlay.
+
+### Save failure handling
+
+The full-time write performs a `matches/{matchId}` insert plus a batched `seasonMinutes` / `appearances` increment. If either fails (offline, network error, transient Firestore error):
+
+- The full pending write payload is queued in `localStorage` under `submanager_pending_saves`
+- A small **"Sync pending…"** banner appears on the Full Time overlay and on subsequent screens until the queue drains
+- The app retries automatically when the network reports `online`, and on every subsequent app launch while signed in
+- The coach can still tap **New Match** or **Season Stats →** — the queued write will be flushed in the background; the new-match flow does not clear the pending queue
+- No data is lost; duplicate writes are prevented by including the original match `matchId` so a successful second attempt skips the increment
 
 ---
 

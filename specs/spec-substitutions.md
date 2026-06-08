@@ -16,6 +16,8 @@ Allow the coach to plan and execute one or more simultaneous substitutions with 
 
 ## Interaction Flow
 
+**Tap order is symmetric.** The coach can tap a pitch player first then a bench player, **or** tap a bench player first then a pitch player. The two steps below describe the most common order; either step may come first.
+
 ### Step 1 — Select a player coming off
 - Tap any player in the **Pitch** column
 - Their card highlights with a **red border**
@@ -24,7 +26,8 @@ Allow the coach to plan and execute one or more simultaneous substitutions with 
 ### Step 2 — Select a player coming on
 - Tap any player in the **Bench** column → highlights green
 - The substitution bar shows the pending hint: *"↑ [Name] coming on — tap a pitch player to swap..."*
-- **If the pitch has empty slots** (fewer players than the configured team size), each open slot appears at the bottom of the Pitch column as a dashed grey **Empty** placeholder. Tapping one stages the bench player as a solo addition with no one coming off; the placeholder turns green and reads **↑ Staged**
+- **Empty pitch slots are always visible** in the Pitch column whenever pitch headcount is less than the configured team size: each open slot appears as a dashed grey **Empty** placeholder at the bottom of the column. They become tap-targets only while a bench player is the pending selection. Tapping one stages the bench player as a solo addition with no one coming off; the placeholder turns green and reads **↑ Staged**
+- **Team-size guard**: the number of fill subs that can be staged is capped so that `current on-pitch count + staged fills ≤ team size`. Once all empty slots are accounted for by staged fills, further empty-slot taps are ignored. This prevents the coach from accidentally exceeding the configured team size. The same guard is enforced at confirmation time as a safety net.
 - Tap a regular pitch player → pair is **staged** as a normal swap
 
 When staged:
@@ -46,6 +49,7 @@ The Pitch column header shows the current fill against team size, e.g. **Pitch (
   - The substitution bar dismisses
 - **✕ (cancel all)**: clears all staged pairs and the pending selection; no changes are made
 - **Individual ✕**: removes a single staged pair from the queue without affecting others
+- **Tap a staged card**: tapping either player card that is part of a staged pair removes that pair from the queue (equivalent to the row's individual ✕). This makes un-staging reachable directly from the player columns.
 
 ---
 
@@ -72,10 +76,11 @@ SUBSTITUTIONS                        [✕]  [Confirm All]
 The **★** button in the match header opens a "Suggested Subs" panel that recommends up to 4 substitution pairs based on playing time fairness.
 
 ### Logic
-- **Coming off**: on-pitch players (excluding GK), sorted by most time played
-- **Coming on**: bench players (excluding GK), sorted by least time played
+- **Coming off**: on-pitch players, **GK excluded**, sorted by most time played
+- **Coming on**: bench players, **GK excluded**, sorted by least time played
+- The GK exclusion applies to both candidate lists — the recommender never suggests swapping the goalkeeper in either direction. Goalkeeper changes go through the **Change GK** long-press flow instead.
 - Pairs are matched 1-to-1: most-played off ↔ least-played on
-- Maximum of 4 pairs shown (limited by bench availability)
+- Maximum of **4 pairs** shown (limited by bench availability)
 
 ### Panel behaviour
 - Slides up from the bottom of the screen
@@ -99,7 +104,7 @@ The **★** button in the match header opens a "Suggested Subs" panel that recom
 
 After **Confirm All** is tapped, one grouped log event is created containing all pairs from that action:
 
-- **Minute** — match minute stamp at the top of the event card (1st half = elapsed minutes; 2nd half = elapsed + 40)
+- **Minute** — match minute stamp at the top of the event card. 1st half = elapsed minutes in the current half; 2nd half = elapsed minutes in the current half + the configured **minutes per half** value (so for a 30-minute half, a sub at 5:00 of the 2nd half logs as minute 35)
 - **Pairs** — one row per swap: ↑ player coming on (green), ↓ player coming off (red)
 - Multiple pairs in the same Confirm All are grouped into a single card with divider lines between pairs
 - Log events are shown most-recent first (newest at top)

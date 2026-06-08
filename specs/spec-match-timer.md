@@ -69,7 +69,7 @@ When **1 period** is selected, the **H/T** button is replaced by **F/T**, the pe
 - A smaller, muted **time-left** counter (e.g. `-12:34`) appears next to the main clock, showing the remaining time in the current half
 - A smaller **Next sub in MM:SS** countdown sits below the clock row, showing how long until the next substitution reminder
 - "1st Half" / "2nd Half" label shown above the clock
-- Timer display is capped at the configured half duration even if the clock overruns slightly
+- The timer auto-stops at exactly the configured half duration — overrun is not possible. The half-time or full-time overlay opens immediately.
 
 ## Sub Alert
 
