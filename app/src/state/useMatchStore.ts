@@ -272,6 +272,7 @@ export const useMatchStore = create<MatchState>()(
             lastOnAt: p.lastOnAt,
             accumulatedTime: p.accumulatedTime,
             subCount: p.subCount,
+            benchCount: p.benchCount,
           };
         };
 
@@ -297,6 +298,7 @@ export const useMatchStore = create<MatchState>()(
               offP.onPitch = false;
               offP.lastOnAt = null;
               offP.subCount += 1;
+              offP.benchCount += 1; // player has hit the bench again
               affectedIds.add(offP.id);
               pairs.push({ onId: onP.id, onName: onP.name, offId: offP.id, offName: offP.name });
             }
@@ -336,6 +338,7 @@ export const useMatchStore = create<MatchState>()(
             lastOnAt: snap.lastOnAt,
             accumulatedTime: snap.accumulatedTime,
             subCount: snap.subCount,
+            benchCount: snap.benchCount,
           };
         });
         set({
@@ -358,6 +361,7 @@ export const useMatchStore = create<MatchState>()(
             lastOnAt: snap.lastOnAt,
             accumulatedTime: snap.accumulatedTime,
             subCount: snap.subCount,
+            benchCount: snap.benchCount,
           };
         });
         // …and re-stage the pairs so the coach can adjust and re-confirm.
@@ -417,7 +421,19 @@ export const useMatchStore = create<MatchState>()(
     }),
     {
       name: 'submanager_match',
-      version: 1,
+      version: 2,
+      // Backfill benchCount for matches persisted before it existed: bench
+      // players default to 1, pitch players to 0.
+      migrate: (persisted, fromVersion) => {
+        const st = persisted as MatchState;
+        if (fromVersion < 2 && st && Array.isArray(st.players)) {
+          st.players = st.players.map((p) => ({
+            ...p,
+            benchCount: p.benchCount ?? (p.onPitch ? 0 : 1),
+          }));
+        }
+        return st;
+      },
       // Don't persist the tick counter — it's just a re-render trigger.
       partialize: (s) => {
         const { tick: _tick, ...rest } = s;

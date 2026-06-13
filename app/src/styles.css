@@ -1143,6 +1143,15 @@ body {
   min-width: 0;
 }
 
+.bench-count {
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.55;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 .time-played {
   font-size: 11px;
   font-variant-numeric: tabular-nums;

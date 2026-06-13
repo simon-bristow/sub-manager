@@ -51,6 +51,8 @@ export function AddPlayerOverlay({ visible, onDismiss }: Props) {
       accumulatedTime: 0,
       lastOnAt: null,
       subCount: 0,
+      // Added mid-match on the bench → starts with a bench count of 1.
+      benchCount: 1,
     });
     onDismiss();
   };

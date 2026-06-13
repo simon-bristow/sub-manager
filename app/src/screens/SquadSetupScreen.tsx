@@ -232,6 +232,8 @@ export function SquadSetupScreen() {
       accumulatedTime: 0,
       lastOnAt: i < starters.length ? 0 : null,
       subCount: 0,
+      // Players starting on the bench begin with a bench count of 1.
+      benchCount: i < starters.length ? 0 : 1,
     }));
     const matchId = crypto.randomUUID();
     startMatch({ matchId, config, players });

@@ -33,6 +33,9 @@ export interface Player {
   // lastOnAt: matchSeconds when they came on (null while on bench)
   lastOnAt: number | null;
   subCount: number;
+  // benchCount: number of times the player has been on the bench — starts at 1
+  // for players who begin on the bench, +1 each time they're subbed off.
+  benchCount: number;
 }
 
 // Substitution staging.
@@ -48,6 +51,7 @@ export interface PlayerSnapshot {
   lastOnAt: number | null;
   accumulatedTime: number;
   subCount: number;
+  benchCount: number;
 }
 
 // Substitution log entry — one per Confirm All.

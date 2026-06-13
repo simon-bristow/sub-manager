@@ -61,6 +61,15 @@ export function PlayerCard({ player, onLongPress }: Props) {
       <span className="player-name" style={selected ? undefined : { color: textColor }}>
         {player.name}
       </span>
+      {player.benchCount > 0 && (
+        <span
+          className="bench-count"
+          title={`On the bench ${player.benchCount}×`}
+          style={selected ? undefined : { color: textColor }}
+        >
+          {player.benchCount}
+        </span>
+      )}
       <span
         className="time-played"
         style={{ color: selected ? fatigueColor(live, maxTime) : textColor }}

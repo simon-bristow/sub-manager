@@ -30,6 +30,7 @@ Each player (on pitch or bench) is shown as a compact single-line card:
 
 - **GK badge** — amber pill shown only for the designated goalkeeper
 - **Name** — left-aligned, truncated with ellipsis if too long
+- **Bench count** — a small, subtle number shown immediately after the name: how many times the player has been on the bench. Players who **start on the bench** begin at **1**; each time a player is **subbed off** it increments by 1. Starters who have never been benched show **0** as no number (it is hidden to keep the pitch uncluttered). Helps the coach see rotation fairness at a glance. The count uses the card's contrasting text colour so it stays readable on the fatigue background.
 - **Time** — right-aligned, shows cumulative time on pitch in `MM:SS`
 - **Whole-card fatigue colour** — the entire card background is tinted by a **fatigue gradient** relative to the most-played player on the squad, so each player's load reads at a glance during the game (not just from the clock):
   - 0–50% of max → cool blue → green
