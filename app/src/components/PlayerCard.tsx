@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Player } from '../domain/types';
 import { useMatchStore, liveTimeOnPitch, deriveMatchSeconds } from '../state/useMatchStore';
 import { formatTime } from '../domain/timer';
-import { fatigueColor } from '../domain/fatigue';
+import { fatigueColor, fatigueCardStyle } from '../domain/fatigue';
 import { useLongPress } from '../hooks/useLongPress';
 
 interface Props {
@@ -33,6 +33,7 @@ export function PlayerCard({ player, onLongPress }: Props) {
   const isStagedOn = stagedSubs.some((s) => s.onId === player.id);
   const isPendingOn = pendingOn === player.id;
   const isPendingOff = pendingOff === player.id;
+  const selected = isStagedOff || isPendingOff || isStagedOn || isPendingOn;
 
   const handlers = useLongPress(
     () => onLongPress(player.id),
@@ -48,11 +49,22 @@ export function PlayerCard({ player, onLongPress }: Props) {
     .filter(Boolean)
     .join(' ');
 
+  // While selected/staged, let the red/green selection highlight dominate;
+  // otherwise tint the whole card by fatigue so it reads at a glance.
+  const fc = fatigueCardStyle(live, maxTime);
+  const cardStyle = selected ? undefined : { background: fc.background };
+  const textColor = selected ? undefined : fc.color;
+
   return (
-    <div className={cls} {...handlers}>
+    <div className={cls} {...handlers} style={cardStyle}>
       {player.isGK && <span className="gk-badge">GK</span>}
-      <span className="player-name">{player.name}</span>
-      <span className="time-played" style={{ color: fatigueColor(live, maxTime) }}>
+      <span className="player-name" style={selected ? undefined : { color: textColor }}>
+        {player.name}
+      </span>
+      <span
+        className="time-played"
+        style={{ color: selected ? fatigueColor(live, maxTime) : textColor }}
+      >
         {formatTime(live)}
       </span>
     </div>

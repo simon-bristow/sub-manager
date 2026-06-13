@@ -30,11 +30,14 @@ Each player (on pitch or bench) is shown as a compact single-line card:
 
 - **GK badge** — amber pill shown only for the designated goalkeeper
 - **Name** — left-aligned, truncated with ellipsis if too long
-- **Time** — right-aligned, shows cumulative time on pitch in `MM:SS`. The colour follows a **fatigue gradient** relative to the most-played player on the squad:
+- **Time** — right-aligned, shows cumulative time on pitch in `MM:SS`
+- **Whole-card fatigue colour** — the entire card background is tinted by a **fatigue gradient** relative to the most-played player on the squad, so each player's load reads at a glance during the game (not just from the clock):
   - 0–50% of max → cool blue → green
   - 50–100% of max → green → amber → red
+  - The card's text colour automatically switches between dark and light based on the background's luminance, so the name and clock stay legible across the whole gradient
   - Bench players use the same gradient (their time is frozen but their position on the scale is preserved)
-- Cards are sorted by **time on pitch descending** — most-played player always appears at the top
+  - When a card is selected/staged for a substitution, the red/green selection highlight takes over from the fatigue tint so the pending sub is unmistakable
+- Cards are sorted by **time on pitch descending** — most-played player always appears at the top (subject to the column sort toggle)
 
 ---
 
