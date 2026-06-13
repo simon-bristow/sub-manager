@@ -7,6 +7,7 @@ import { Clock } from '../components/Clock';
 import { NextSubCountdown } from '../components/NextSubCountdown';
 import { PlayerCard } from '../components/PlayerCard';
 import { EmptySlotCard } from '../components/EmptySlotCard';
+import { SubLogCard } from '../components/SubLogCard';
 import { SubBar } from '../components/SubBar';
 import { HalfTimeOverlay } from '../overlays/HalfTimeOverlay';
 import { FullTimeOverlay } from '../overlays/FullTimeOverlay';
@@ -15,6 +16,7 @@ import { ResetOverlay } from '../overlays/ResetOverlay';
 import { PlayerOptionsOverlay } from '../overlays/PlayerOptionsOverlay';
 import { AddPlayerOverlay } from '../overlays/AddPlayerOverlay';
 import { SuggestionsOverlay } from '../overlays/SuggestionsOverlay';
+import { SubLogActionOverlay } from '../overlays/SubLogActionOverlay';
 import { AboutOverlay } from '../overlays/AboutOverlay';
 import { saveMatchResult } from '../firebase/teams';
 import { enqueue, subscribePending, flushQueue } from '../firebase/syncQueue';
@@ -51,6 +53,7 @@ export function MatchScreen() {
   const [aboutVisible, setAboutVisible] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [subOrder, setSubOrder] = useState<'latest' | 'earliest'>('latest');
+  const [subActionIndex, setSubActionIndex] = useState<number | null>(null);
 
   // Subscribe to the offline-queue counter.
   useEffect(() => subscribePending(setPendingCount), []);
@@ -265,29 +268,17 @@ export function MatchScreen() {
             )}
           </div>
           <div id="sub-log-entries" className="player-cards sub-log-entries">
-            {(subOrder === 'latest' ? subLog.slice().reverse() : subLog.slice()).map((e, i) => {
-              const offs = e.pairs.map((p) => p.offName).filter((n): n is string => !!n);
-              const ons = e.pairs.map((p) => p.onName);
-              return (
-                <div key={i} className="sub-log-entry">
-                  <span className="log-time">{e.minute}'</span>
-                  <div className="log-pairs">
-                    <div className="log-group">
-                      {ons.map((name, j) => (
-                        <span key={`on-${j}`} className="log-on">↑ {name}</span>
-                      ))}
-                    </div>
-                    {offs.length > 0 && (
-                      <div className="log-group">
-                        {offs.map((name, j) => (
-                          <span key={`off-${j}`} className="log-off">↓ {name}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {(subOrder === 'latest'
+              ? subLog.map((_, i) => i).reverse()
+              : subLog.map((_, i) => i)
+            ).map((i) => (
+              <SubLogCard
+                key={i}
+                entry={subLog[i]}
+                index={i}
+                onLongPress={setSubActionIndex}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -322,6 +313,10 @@ export function MatchScreen() {
       <SuggestionsOverlay
         visible={suggestionsVisible}
         onDismiss={() => setSuggestionsVisible(false)}
+      />
+      <SubLogActionOverlay
+        index={subActionIndex}
+        onDismiss={() => setSubActionIndex(null)}
       />
       <AboutOverlay visible={aboutVisible} onDismiss={() => setAboutVisible(false)} />
     </div>

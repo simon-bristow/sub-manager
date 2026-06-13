@@ -40,10 +40,23 @@ export type StagedSub =
   | { kind: 'swap'; offId: string; onId: string }
   | { kind: 'fill'; onId: string };
 
+// Snapshot of one player's tracking state, captured before a Confirm All so
+// the substitution can be reversed if it was made in error.
+export interface PlayerSnapshot {
+  id: string;
+  onPitch: boolean;
+  lastOnAt: number | null;
+  accumulatedTime: number;
+  subCount: number;
+}
+
 // Substitution log entry — one per Confirm All.
 export interface SubLogEntry {
   minute: number;
-  pairs: { onName: string; offName: string | null }[];
+  pairs: { onId: string; onName: string; offId: string | null; offName: string | null }[];
+  // Pre-confirm state of every player this event touched (on + off players).
+  // Used to undo or re-stage the event from the sub log.
+  snapshot: PlayerSnapshot[];
 }
 
 // Firestore team document shape.

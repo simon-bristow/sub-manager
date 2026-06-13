@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { MatchConfig, Player, StagedSub, SubLogEntry } from '../domain/types';
+import type { MatchConfig, Player, PlayerSnapshot, StagedSub, SubLogEntry } from '../domain/types';
 
 export type Screen =
   | 'login'
@@ -52,6 +52,8 @@ interface MatchState {
   removeStaged: (index: number) => void;
   cancelStaging: () => void;
   confirmAll: () => void;
+  undoSubEvent: (index: number) => void;
+  returnSubEventToStaging: (index: number) => void;
 
   setGK: (playerId: string) => void;
   addPlayer: (p: Player) => void;
@@ -77,6 +79,8 @@ const INITIAL: Omit<
   | 'removeStaged'
   | 'cancelStaging'
   | 'confirmAll'
+  | 'undoSubEvent'
+  | 'returnSubEventToStaging'
   | 'setGK'
   | 'addPlayer'
   | 'removePlayer'
@@ -238,7 +242,21 @@ export const useMatchStore = create<MatchState>()(
           Math.floor(halfElapsed / 60) + (s.half - 1) * s.config.minutes;
 
         const updatedPlayers = s.players.map((p) => ({ ...p }));
-        const pairs: { onName: string; offName: string | null }[] = [];
+        const pairs: SubLogEntry['pairs'] = [];
+        // Capture the pre-confirm state of every player this event touches,
+        // so the substitution can be undone or re-staged from the sub log.
+        const affectedIds = new Set<string>();
+        const snapshotOf = (id: string): PlayerSnapshot | null => {
+          const p = s.players.find((x) => x.id === id);
+          if (!p) return null;
+          return {
+            id: p.id,
+            onPitch: p.onPitch,
+            lastOnAt: p.lastOnAt,
+            accumulatedTime: p.accumulatedTime,
+            subCount: p.subCount,
+          };
+        };
 
         for (const sub of s.stagedSubs) {
           const onP = updatedPlayers.find((p) => p.id === sub.onId);
@@ -251,6 +269,7 @@ export const useMatchStore = create<MatchState>()(
           onP.onPitch = true;
           onP.lastOnAt = matchSeconds;
           onP.subCount += 1;
+          affectedIds.add(onP.id);
           if (sub.kind === 'swap') {
             const offP = updatedPlayers.find((p) => p.id === sub.offId);
             if (offP) {
@@ -261,18 +280,79 @@ export const useMatchStore = create<MatchState>()(
               offP.onPitch = false;
               offP.lastOnAt = null;
               offP.subCount += 1;
-              pairs.push({ onName: onP.name, offName: offP.name });
+              affectedIds.add(offP.id);
+              pairs.push({ onId: onP.id, onName: onP.name, offId: offP.id, offName: offP.name });
             }
           } else {
-            pairs.push({ onName: onP.name, offName: null });
+            pairs.push({ onId: onP.id, onName: onP.name, offId: null, offName: null });
           }
         }
+
+        if (pairs.length === 0) {
+          set({ stagedSubs: [], pendingOn: null });
+          return;
+        }
+
+        const snapshot = [...affectedIds]
+          .map(snapshotOf)
+          .filter((s): s is PlayerSnapshot => s !== null);
 
         set({
           players: updatedPlayers,
           stagedSubs: [],
           pendingOn: null,
-          subLog: [...s.subLog, { minute, pairs }],
+          subLog: [...s.subLog, { minute, pairs, snapshot }],
+        });
+      },
+
+      undoSubEvent: (index) => {
+        const s = get();
+        const entry = s.subLog[index];
+        if (!entry) return;
+        const restored = s.players.map((p) => {
+          const snap = entry.snapshot.find((x) => x.id === p.id);
+          if (!snap) return p;
+          return {
+            ...p,
+            onPitch: snap.onPitch,
+            lastOnAt: snap.lastOnAt,
+            accumulatedTime: snap.accumulatedTime,
+            subCount: snap.subCount,
+          };
+        });
+        set({
+          players: restored,
+          subLog: s.subLog.filter((_, i) => i !== index),
+        });
+      },
+
+      returnSubEventToStaging: (index) => {
+        const s = get();
+        const entry = s.subLog[index];
+        if (!entry) return;
+        // Restore players to their pre-confirm state…
+        const restored = s.players.map((p) => {
+          const snap = entry.snapshot.find((x) => x.id === p.id);
+          if (!snap) return p;
+          return {
+            ...p,
+            onPitch: snap.onPitch,
+            lastOnAt: snap.lastOnAt,
+            accumulatedTime: snap.accumulatedTime,
+            subCount: snap.subCount,
+          };
+        });
+        // …and re-stage the pairs so the coach can adjust and re-confirm.
+        const restaged: StagedSub[] = entry.pairs.map((pair) =>
+          pair.offId
+            ? { kind: 'swap', offId: pair.offId, onId: pair.onId }
+            : { kind: 'fill', onId: pair.onId },
+        );
+        set({
+          players: restored,
+          subLog: s.subLog.filter((_, i) => i !== index),
+          stagedSubs: [...s.stagedSubs, ...restaged],
+          pendingOn: null,
         });
       },
 

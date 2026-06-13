@@ -72,6 +72,7 @@ See [spec-substitutions.md](spec-substitutions.md) for full substitution interac
 - Events are shown most-recent first (newest at top) by default; a header toggle (**↓ Latest** / **↑ Earliest**) flips the order so the coach can review the earliest subs first when many have been made
 - The column header shows a count of total individual player swaps made
 - The column scrolls independently if there are many entries
+- **Long-press** a log entry to open the undo popup — delete the substitution (restoring players to their pre-confirm state) or send it back to staging. See [spec-substitutions.md](spec-substitutions.md) for full detail
 
 ---
 

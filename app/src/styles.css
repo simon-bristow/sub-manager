@@ -1344,7 +1344,23 @@ body {
   flex-direction: column;
   gap: 4px;
   flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
+.sub-log-entry:active { background: var(--surface2); }
+
+.sub-action-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+.sub-action-summary .log-on,
+.sub-action-summary .log-off { font-size: 14px; }
 .log-time {
   font-size: 10px;
   font-variant-numeric: tabular-nums;

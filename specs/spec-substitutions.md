@@ -110,3 +110,15 @@ After **Confirm All** is tapped, one grouped log event is created containing all
 - Log events default to **most-recent first** (newest at top)
 - **Order toggle** — when more than one log event exists, a small toggle in the Subs column header switches between **↓ Latest** (newest first) and **↑ Earliest** (oldest first). This lets the coach scroll back to the very first substitutions of the match when many have been made. Default is Latest.
 - The column header count reflects total individual player swaps (not events)
+
+### Undoing a Substitution
+
+A substitution confirmed in error (e.g. **Confirm All** tapped too early) can be reversed directly from the sub log:
+
+- **Long-press** (600ms hold) on a sub log entry opens a confirmation popup summarising that event (the players who came on ↑ and went off ↓, and the minute)
+- The popup offers three choices:
+  - **Delete substitution** — removes the log entry and **restores every affected player to their exact pre-confirm state** (on/off-pitch status, time-on-pitch tracking, and sub count). The players return to the previous state as though the substitution never happened
+  - **Send back to staging** — restores the affected players to their pre-confirm state *and* re-stages the same pair(s) in the substitution bar, so the coach can adjust and re-confirm
+  - **Cancel** — closes the popup with no change
+- The reversal is driven by a snapshot of the affected players captured at confirm time, so it is exact. It is intended for correcting a recent mistake; undoing an older event after further subs have moved the same players is not guaranteed to be consistent
+- A normal tap (or scroll) on a log entry does nothing — only a deliberate long-press opens the popup
