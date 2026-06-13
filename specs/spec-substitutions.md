@@ -111,7 +111,7 @@ After **Confirm All** is tapped, one grouped log event is created containing all
 - **Grouped by direction** — rather than pairing on/off line by line, the event lists all players **coming on** together (↑ green) as one group, followed by all players **coming off** together (↓ red) as a second group, separated by a divider line. This makes multi-substitution combinations easier to read at a glance (e.g. "these three came on, these three went off")
 - Solo bring-ons (empty-slot fills) simply appear in the ↑ group with no corresponding ↓ entry; if an event has no players coming off, the off group is omitted
 - Log events default to **most-recent first** (newest at top)
-- **Order toggle** — when more than one log event exists, a small toggle in the Subs column header switches between **↓ Latest** (newest first) and **↑ Earliest** (oldest first). This lets the coach scroll back to the very first substitutions of the match when many have been made. Default is Latest.
+- **Order toggle** — when more than one log event exists, a sort toggle in the Subs column header (a standard sort icon plus label, matching the Pitch/Bench column toggles) switches between **Latest** (newest first) and **Earliest** (oldest first). This lets the coach scroll back to the very first substitutions of the match when many have been made. Default is Latest.
 - The column header count reflects total individual player swaps (not events)
 
 ### Undoing a Substitution

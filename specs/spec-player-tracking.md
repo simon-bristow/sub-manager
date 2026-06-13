@@ -40,9 +40,18 @@ Each player (on pitch or bench) is shown as a compact single-line card:
 
 ## Sorting
 
-- The pitch column re-sorts after every substitution
-- The pitch column also re-sorts automatically every **60 seconds** while the clock is running, so the order stays accurate throughout the half
-- Most-played player is always at the top, helping the coach spot who is due for a rest
+Both the **Pitch** and **Bench** columns have their own sort toggle in the column header — a standard sort icon plus a short label showing the active mode. Tapping it cycles through three modes:
+
+| Mode | Label | Order |
+|---|---|---|
+| Max time | **Most** | Most time on pitch first (default) — spot who is due for a rest |
+| Min time | **Least** | Least time on pitch first — spot who needs minutes |
+| Alphabetical | **A–Z** | By player name — quickly find a specific player |
+
+- The toggle appears only when the column holds more than one player
+- Each column remembers its own mode independently; both default to **Most**
+- The list re-sorts live (every tick) so the order stays accurate as time accumulates and after every substitution
+- The Subs column uses the same-looking toggle to flip log order between **Latest** and **Earliest** (see [spec-substitutions.md](spec-substitutions.md))
 
 ---
 
@@ -69,7 +78,7 @@ See [spec-substitutions.md](spec-substitutions.md) for full substitution interac
 - Each event shows:
   - Match minute (amber) at the top of the card
   - All players coming on (↑ green) grouped together, then all players coming off (↓ red) grouped together, separated by a subtle divider line — so multi-substitution combinations are easy to read at a glance
-- Events are shown most-recent first (newest at top) by default; a header toggle (**↓ Latest** / **↑ Earliest**) flips the order so the coach can review the earliest subs first when many have been made
+- Events are shown most-recent first (newest at top) by default; a header sort toggle (**Latest** / **Earliest**, same style as the Pitch/Bench toggles) flips the order so the coach can review the earliest subs first when many have been made
 - The column header shows a count of total individual player swaps made
 - The column scrolls independently if there are many entries
 - **Long-press** a log entry to open the undo popup — delete the substitution (restoring players to their pre-confirm state) or send it back to staging. See [spec-substitutions.md](spec-substitutions.md) for full detail

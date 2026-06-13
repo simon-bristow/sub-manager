@@ -8,7 +8,9 @@ import { NextSubCountdown } from '../components/NextSubCountdown';
 import { PlayerCard } from '../components/PlayerCard';
 import { EmptySlotCard } from '../components/EmptySlotCard';
 import { SubLogCard } from '../components/SubLogCard';
+import { SortToggle } from '../components/SortToggle';
 import { SubBar } from '../components/SubBar';
+import type { Player } from '../domain/types';
 import { HalfTimeOverlay } from '../overlays/HalfTimeOverlay';
 import { FullTimeOverlay } from '../overlays/FullTimeOverlay';
 import { FullTimeConfirmOverlay } from '../overlays/FullTimeConfirmOverlay';
@@ -20,6 +22,26 @@ import { SubLogActionOverlay } from '../overlays/SubLogActionOverlay';
 import { AboutOverlay } from '../overlays/AboutOverlay';
 import { saveMatchResult } from '../firebase/teams';
 import { enqueue, subscribePending, flushQueue } from '../firebase/syncQueue';
+
+// Player-list sort modes, cycled by the column sort toggle.
+type SortMode = 'max' | 'min' | 'alpha';
+
+const SORT_LABEL: Record<SortMode, string> = { max: 'Most', min: 'Least', alpha: 'A–Z' };
+
+const nextSort = (m: SortMode): SortMode =>
+  m === 'max' ? 'min' : m === 'min' ? 'alpha' : 'max';
+
+function sortPlayers(list: Player[], mode: SortMode, ms: number): Player[] {
+  const arr = list.slice();
+  if (mode === 'alpha') {
+    arr.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (mode === 'min') {
+    arr.sort((a, b) => liveTimeOnPitch(a, ms) - liveTimeOnPitch(b, ms));
+  } else {
+    arr.sort((a, b) => liveTimeOnPitch(b, ms) - liveTimeOnPitch(a, ms));
+  }
+  return arr;
+}
 
 export function MatchScreen() {
   useTick();
@@ -54,6 +76,8 @@ export function MatchScreen() {
   const [pendingCount, setPendingCount] = useState(0);
   const [subOrder, setSubOrder] = useState<'latest' | 'earliest'>('latest');
   const [subActionIndex, setSubActionIndex] = useState<number | null>(null);
+  const [pitchSort, setPitchSort] = useState<SortMode>('max');
+  const [benchSort, setBenchSort] = useState<SortMode>('max');
 
   // Subscribe to the offline-queue counter.
   useEffect(() => subscribePending(setPendingCount), []);
@@ -125,16 +149,9 @@ export function MatchScreen() {
 
   if (!config) return null;
 
-  const onPitch = players.filter((p) => p.onPitch).slice().sort((a, b) => {
-    const s = useMatchStore.getState();
-    const ms = deriveMatchSeconds(s.timerStartedAt, s.accumulatedSeconds);
-    return liveTimeOnPitch(b, ms) - liveTimeOnPitch(a, ms);
-  });
-  const onBench = players.filter((p) => !p.onPitch).slice().sort((a, b) => {
-    const s = useMatchStore.getState();
-    const ms = deriveMatchSeconds(s.timerStartedAt, s.accumulatedSeconds);
-    return liveTimeOnPitch(b, ms) - liveTimeOnPitch(a, ms);
-  });
+  const sortSeconds = deriveMatchSeconds(timerStartedAt, accumulatedSeconds);
+  const onPitch = sortPlayers(players.filter((p) => p.onPitch), pitchSort, sortSeconds);
+  const onBench = sortPlayers(players.filter((p) => !p.onPitch), benchSort, sortSeconds);
 
   const stagedSubs = useMatchStore.getState().stagedSubs;
   const stagedSoloOn = stagedSubs.filter((s) => s.kind === 'fill').length;
@@ -223,6 +240,13 @@ export function MatchScreen() {
           <div className="list-header">
             <span className="list-title">Bench</span>
             <span id="bench-count" className="list-count">({onBench.length})</span>
+            {onBench.length > 1 && (
+              <SortToggle
+                label={SORT_LABEL[benchSort]}
+                onClick={() => setBenchSort(nextSort)}
+                title={`Sort bench: ${SORT_LABEL[benchSort]} — tap to change`}
+              />
+            )}
           </div>
           <div id="bench-list-match" className="player-cards">
             {onBench.map((p) => (
@@ -237,6 +261,13 @@ export function MatchScreen() {
             <span id="pitch-count" className="list-count">
               ({onPitch.length}/{config.teamSize})
             </span>
+            {onPitch.length > 1 && (
+              <SortToggle
+                label={SORT_LABEL[pitchSort]}
+                onClick={() => setPitchSort(nextSort)}
+                title={`Sort pitch: ${SORT_LABEL[pitchSort]} — tap to change`}
+              />
+            )}
           </div>
           <div id="pitch-list" className="player-cards">
             {onPitch.map((p) => (
@@ -258,13 +289,11 @@ export function MatchScreen() {
               {subTotal > 0 ? `(${subTotal})` : ''}
             </span>
             {subLog.length > 1 && (
-              <button
-                className="sub-order-toggle"
+              <SortToggle
+                label={subOrder === 'latest' ? 'Latest' : 'Earliest'}
                 onClick={() => setSubOrder((o) => (o === 'latest' ? 'earliest' : 'latest'))}
-                title={subOrder === 'latest' ? 'Showing latest first — tap for earliest first' : 'Showing earliest first — tap for latest first'}
-              >
-                {subOrder === 'latest' ? '↓ Latest' : '↑ Earliest'}
-              </button>
+                title={`Showing ${subOrder} first — tap to change`}
+              />
             )}
           </div>
           <div id="sub-log-entries" className="player-cards sub-log-entries">

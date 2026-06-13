@@ -1060,7 +1060,7 @@ body {
 
 .list-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   margin-bottom: 8px;
   flex-shrink: 0;
@@ -1076,8 +1076,11 @@ body {
   font-size: 11px;
   color: var(--muted);
 }
-.sub-order-toggle {
+.sort-toggle {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   background: var(--surface2);
   border: none;
   border-radius: 6px;
@@ -1089,8 +1092,10 @@ body {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.sub-order-toggle:hover { color: var(--text); background: var(--border); }
+.sort-toggle:hover { color: var(--text); background: var(--border); }
+.sort-toggle-icon { width: 11px; height: 11px; flex-shrink: 0; }
 
 .player-cards {
   flex: 1;
