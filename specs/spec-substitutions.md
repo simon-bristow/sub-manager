@@ -108,8 +108,9 @@ The **★** button in the match header opens a "Suggested Subs" panel that recom
 After **Confirm All** is tapped, one grouped log event is created containing all pairs from that action:
 
 - **Minute** — match minute stamp at the top of the event card. 1st half = elapsed minutes in the current half; 2nd half = elapsed minutes in the current half + the configured **minutes per half** value (so for a 30-minute half, a sub at 5:00 of the 2nd half logs as minute 35)
-- **Grouped by direction** — rather than pairing on/off line by line, the event lists all players **coming on** together (↑ green) as one group, followed by all players **coming off** together (↓ red) as a second group, separated by a divider line. This makes multi-substitution combinations easier to read at a glance (e.g. "these three came on, these three went off")
-- Solo bring-ons (empty-slot fills) simply appear in the ↑ group with no corresponding ↓ entry; if an event has no players coming off, the off group is omitted
+- **Grouped by direction, side by side** — rather than pairing on/off line by line, the event shows two columns: all players **coming on** (↑ green) in the left column and all players **coming off** (↓ red) in the right column, separated by a thin vertical divider. The two-column layout keeps a busy log compact (each event is roughly half the height of a stacked list) and makes multi-substitution combinations easy to scan ("these came on, these went off")
+- Names are truncated with an ellipsis to fit the narrow column; the full names are always visible in the long-press popup (below)
+- Solo bring-ons (empty-slot fills) simply appear in the ↑ column with no corresponding ↓ entry; if an event has no players coming off, only the left column is shown (full width)
 - Log events default to **most-recent first** (newest at top)
 - **Order toggle** — when more than one log event exists, a sort toggle in the Subs column header (a standard sort icon plus label, matching the Pitch/Bench column toggles) switches between **Latest** (newest first) and **Earliest** (oldest first). This lets the coach scroll back to the very first substitutions of the match when many have been made. Default is Latest.
 - The column header count reflects total individual player swaps (not events)

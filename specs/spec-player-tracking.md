@@ -77,7 +77,7 @@ See [spec-substitutions.md](spec-substitutions.md) for full substitution interac
 - Each **log event** represents one **Confirm All** action, which may contain one or more pairs
 - Each event shows:
   - Match minute (amber) at the top of the card
-  - All players coming on (↑ green) grouped together, then all players coming off (↓ red) grouped together, separated by a subtle divider line — so multi-substitution combinations are easy to read at a glance
+  - Two side-by-side columns: players coming on (↑ green) on the left, players coming off (↓ red) on the right, separated by a thin vertical divider — keeping a busy log compact and easy to scan. Long names truncate to fit; full names appear in the long-press popup
 - Events are shown most-recent first (newest at top) by default; a header sort toggle (**Latest** / **Earliest**, same style as the Pitch/Bench toggles) flips the order so the coach can review the earliest subs first when many have been made
 - The column header shows a count of total individual player swaps made
 - The column scrolls independently if there are many entries

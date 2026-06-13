@@ -20,13 +20,13 @@ export function SubLogCard({ entry, index, onLongPress }: Props) {
       <div className="log-pairs">
         <div className="log-group">
           {ons.map((name, j) => (
-            <span key={`on-${j}`} className="log-on">↑ {name}</span>
+            <span key={`on-${j}`} className="log-on">↑{name}</span>
           ))}
         </div>
         {offs.length > 0 && (
           <div className="log-group">
             {offs.map((name, j) => (
-              <span key={`off-${j}`} className="log-off">↓ {name}</span>
+              <span key={`off-${j}`} className="log-off">↓{name}</span>
             ))}
           </div>
         )}

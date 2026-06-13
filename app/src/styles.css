@@ -1372,23 +1372,26 @@ body {
   color: var(--accent);
   font-weight: 700;
 }
+/* Incoming (↑) and outgoing (↓) players sit side by side as two columns so
+   a busy sub log stays compact and easy to scan. */
 .log-pairs {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex-direction: row;
+  gap: 4px;
 }
 .log-group {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 .log-group + .log-group {
-  margin-top: 3px;
-  padding-top: 3px;
-  border-top: 1px solid var(--border);
+  padding-left: 4px;
+  border-left: 1px solid var(--border);
 }
-.log-on  { font-size: 11px; color: var(--green); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.log-off { font-size: 11px; color: var(--red);   font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-on  { font-size: 10px; color: var(--green); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-off { font-size: 10px; color: var(--red);   font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .about-overlay {
   display: none;
