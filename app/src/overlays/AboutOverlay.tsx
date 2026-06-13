@@ -5,6 +5,7 @@ import { useTeamStore } from '../state/useTeamStore';
 import { doSignOut } from '../firebase/auth';
 import { useScreenStore } from '../state/useScreenStore';
 import { useMatchStore } from '../state/useMatchStore';
+import { APP_VERSION } from '../version';
 
 interface Props {
   visible: boolean;
@@ -31,7 +32,7 @@ export function AboutOverlay({ visible, onDismiss }: Props) {
     <Overlay visible={visible} onBackdrop={onDismiss}>
       {teamLogo && <img id="about-logo" src={teamLogo} alt="" className="about-logo" />}
       <h2>Sub Manager</h2>
-      <div className="about-version">v1.00</div>
+      <div className="about-version">{APP_VERSION}</div>
       <p>Signed in as <strong id="about-user">{user?.displayName ?? user?.email ?? ''}</strong></p>
       <p>Team: <strong id="about-team-name">{teamName ?? ''}</strong></p>
       <div className="overlay-actions">

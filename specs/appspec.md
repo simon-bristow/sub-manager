@@ -103,6 +103,12 @@ Accessible from the Full Time overlay ("Season Stats →") or from the Team Sele
 - Sign-out is accessible from the Team Select screen
 - Auth state is observed via `useAuthState`; unauthenticated users always see the Login screen
 
+## Version Badge
+
+- A small, semi-transparent version label (e.g. `v0.53`) is fixed to the **bottom-right** of every screen, respecting safe-area insets
+- The version string is defined once in `src/version.ts` (`APP_VERSION`) and reused by both the badge and the About overlay
+- Pre-release candidate — versions stay below v1.0 and bump by 0.01 per meaningful change
+
 ## Favicon
 
 - `favicon.png` (32×32 PNG) — tab bar icon; green ↑ and red ↓ substitution arrows on dark navy background

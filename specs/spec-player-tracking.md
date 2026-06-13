@@ -68,9 +68,8 @@ See [spec-substitutions.md](spec-substitutions.md) for full substitution interac
 - Each **log event** represents one **Confirm All** action, which may contain one or more pairs
 - Each event shows:
   - Match minute (amber) at the top of the card
-  - One row per pair: player coming on (↑ green) and player coming off (↓ red)
-  - Multiple pairs within the same event are separated by a subtle divider line
-- Events are shown most-recent first (newest at top)
+  - All players coming on (↑ green) grouped together, then all players coming off (↓ red) grouped together, separated by a subtle divider line — so multi-substitution combinations are easy to read at a glance
+- Events are shown most-recent first (newest at top) by default; a header toggle (**↓ Latest** / **↑ Earliest**) flips the order so the coach can review the earliest subs first when many have been made
 - The column header shows a count of total individual player swaps made
 - The column scrolls independently if there are many entries
 

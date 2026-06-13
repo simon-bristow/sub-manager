@@ -148,10 +148,15 @@ export function TeamSelectScreen() {
     <div id="team-select-screen" className="screen team-select-screen">
       <Toast />
       <header className="team-select-header">
-        <div className="setup-title">Choose a team</div>
-        <div className="team-select-user" id="team-select-user">
-          {user?.displayName ?? user?.email ?? ''}
+        <div className="team-select-header-text">
+          <div className="setup-title">Choose a team</div>
+          <div className="team-select-user" id="team-select-user">
+            {user?.displayName ?? user?.email ?? ''}
+          </div>
         </div>
+        <button id="team-select-signout-btn" className="signout-btn" onClick={() => void doSignOut()}>
+          Sign out
+        </button>
       </header>
 
       <div id="team-list" className="team-list">
@@ -212,10 +217,6 @@ export function TeamSelectScreen() {
         </button>
       </div>
       <div id="create-team-error" className="create-team-error">{createError}</div>
-
-      <button id="team-select-signout-btn" className="signout-btn" onClick={() => void doSignOut()}>
-        Sign out
-      </button>
 
       <Overlay visible={!!renameTarget} onBackdrop={() => setRenameTarget(null)}>
         <h2>Rename team</h2>

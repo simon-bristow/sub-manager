@@ -105,7 +105,8 @@ The **★** button in the match header opens a "Suggested Subs" panel that recom
 After **Confirm All** is tapped, one grouped log event is created containing all pairs from that action:
 
 - **Minute** — match minute stamp at the top of the event card. 1st half = elapsed minutes in the current half; 2nd half = elapsed minutes in the current half + the configured **minutes per half** value (so for a 30-minute half, a sub at 5:00 of the 2nd half logs as minute 35)
-- **Pairs** — one row per swap: ↑ player coming on (green), ↓ player coming off (red)
-- Multiple pairs in the same Confirm All are grouped into a single card with divider lines between pairs
-- Log events are shown most-recent first (newest at top)
+- **Grouped by direction** — rather than pairing on/off line by line, the event lists all players **coming on** together (↑ green) as one group, followed by all players **coming off** together (↓ red) as a second group, separated by a divider line. This makes multi-substitution combinations easier to read at a glance (e.g. "these three came on, these three went off")
+- Solo bring-ons (empty-slot fills) simply appear in the ↑ group with no corresponding ↓ entry; if an event has no players coming off, the off group is omitted
+- Log events default to **most-recent first** (newest at top)
+- **Order toggle** — when more than one log event exists, a small toggle in the Subs column header switches between **↓ Latest** (newest first) and **↑ Earliest** (oldest first). This lets the coach scroll back to the very first substitutions of the match when many have been made. Default is Latest.
 - The column header count reflects total individual player swaps (not events)

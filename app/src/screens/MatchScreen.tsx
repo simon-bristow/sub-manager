@@ -50,6 +50,7 @@ export function MatchScreen() {
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const [aboutVisible, setAboutVisible] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [subOrder, setSubOrder] = useState<'latest' | 'earliest'>('latest');
 
   // Subscribe to the offline-queue counter.
   useEffect(() => subscribePending(setPendingCount), []);
@@ -253,27 +254,40 @@ export function MatchScreen() {
             <span id="sub-count" className="list-count">
               {subTotal > 0 ? `(${subTotal})` : ''}
             </span>
+            {subLog.length > 1 && (
+              <button
+                className="sub-order-toggle"
+                onClick={() => setSubOrder((o) => (o === 'latest' ? 'earliest' : 'latest'))}
+                title={subOrder === 'latest' ? 'Showing latest first — tap for earliest first' : 'Showing earliest first — tap for latest first'}
+              >
+                {subOrder === 'latest' ? '↓ Latest' : '↑ Earliest'}
+              </button>
+            )}
           </div>
           <div id="sub-log-entries" className="player-cards sub-log-entries">
-            {subLog.slice().reverse().map((e, i) => (
-              <div key={i} className="sub-log-entry">
-                <span className="log-time">{e.minute}'</span>
-                <div className="log-pairs">
-                  {e.pairs.map((pair, j) => (
-                    <div key={j} className="log-pair">
-                      <span className="log-on">↑ {pair.onName}</span>
-                      {pair.offName ? (
-                        <span className="log-off">↓ {pair.offName}</span>
-                      ) : (
-                        <span className="log-off" style={{ color: 'var(--muted)', fontStyle: 'italic' }}>
-                          → empty slot
-                        </span>
-                      )}
+            {(subOrder === 'latest' ? subLog.slice().reverse() : subLog.slice()).map((e, i) => {
+              const offs = e.pairs.map((p) => p.offName).filter((n): n is string => !!n);
+              const ons = e.pairs.map((p) => p.onName);
+              return (
+                <div key={i} className="sub-log-entry">
+                  <span className="log-time">{e.minute}'</span>
+                  <div className="log-pairs">
+                    <div className="log-group">
+                      {ons.map((name, j) => (
+                        <span key={`on-${j}`} className="log-on">↑ {name}</span>
+                      ))}
                     </div>
-                  ))}
+                    {offs.length > 0 && (
+                      <div className="log-group">
+                        {offs.map((name, j) => (
+                          <span key={`off-${j}`} className="log-off">↓ {name}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

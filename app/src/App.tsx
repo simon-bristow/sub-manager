@@ -8,6 +8,7 @@ import { MatchSetupScreen } from './screens/MatchSetupScreen';
 import { SquadSetupScreen } from './screens/SquadSetupScreen';
 import { MatchScreen } from './screens/MatchScreen';
 import { SeasonScreen } from './screens/SeasonScreen';
+import { APP_VERSION } from './version';
 
 export function App() {
   const [user, loading] = useAuthState(auth);
@@ -29,24 +30,34 @@ export function App() {
     return (
       <div className="loading-screen">
         <div className="loading-spinner">Loading…</div>
+        <div className="version-badge">{APP_VERSION}</div>
       </div>
     );
   }
 
-  switch (screen) {
-    case 'login':
-      return <LoginScreen />;
-    case 'team-select':
-      return <TeamSelectScreen />;
-    case 'match-setup':
-      return <MatchSetupScreen />;
-    case 'squad-setup':
-      return <SquadSetupScreen />;
-    case 'match':
-      return <MatchScreen />;
-    case 'season':
-      return <SeasonScreen />;
-    default:
-      return <LoginScreen />;
-  }
+  const renderScreen = () => {
+    switch (screen) {
+      case 'login':
+        return <LoginScreen />;
+      case 'team-select':
+        return <TeamSelectScreen />;
+      case 'match-setup':
+        return <MatchSetupScreen />;
+      case 'squad-setup':
+        return <SquadSetupScreen />;
+      case 'match':
+        return <MatchScreen />;
+      case 'season':
+        return <SeasonScreen />;
+      default:
+        return <LoginScreen />;
+    }
+  };
+
+  return (
+    <>
+      {renderScreen()}
+      <div className="version-badge">{APP_VERSION}</div>
+    </>
+  );
 }

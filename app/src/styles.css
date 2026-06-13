@@ -89,9 +89,13 @@ body {
 }
 .team-select-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 10px;
   flex-shrink: 0;
+}
+.team-select-header-text {
+  min-width: 0;
 }
 .team-select-logo-wrap {
   display: flex;
@@ -109,11 +113,11 @@ body {
 .signout-btn {
   background: var(--surface2);
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 6px 10px;
+  padding: 4px 8px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -1072,6 +1076,21 @@ body {
   font-size: 11px;
   color: var(--muted);
 }
+.sub-order-toggle {
+  margin-left: auto;
+  background: var(--surface2);
+  border: none;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sub-order-toggle:hover { color: var(--text); background: var(--border); }
 
 .player-cards {
   flex: 1;
@@ -1297,6 +1316,19 @@ body {
   font-size: 14px;
 }
 
+.version-badge {
+  position: fixed;
+  right: calc(env(safe-area-inset-right, 0px) + 6px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 50;
+  letter-spacing: 0.03em;
+}
+
 .sub-log-entries {
   flex: 1;
   overflow-y: auto;
@@ -1324,14 +1356,16 @@ body {
   flex-direction: column;
   gap: 3px;
 }
-.log-pair {
+.log-group {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding-top: 2px;
+}
+.log-group + .log-group {
+  margin-top: 3px;
+  padding-top: 3px;
   border-top: 1px solid var(--border);
 }
-.log-pair:first-child { border-top: none; padding-top: 0; }
 .log-on  { font-size: 11px; color: var(--green); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .log-off { font-size: 11px; color: var(--red);   font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
