@@ -24,12 +24,28 @@ import { saveMatchResult } from '../firebase/teams';
 import { enqueue, subscribePending, flushQueue } from '../firebase/syncQueue';
 
 // Player-list sort modes, cycled by the column sort toggle.
-type SortMode = 'max' | 'min' | 'alpha';
+type SortMode = 'max' | 'min' | 'alpha' | 'benchMax' | 'benchMin';
 
-const SORT_LABEL: Record<SortMode, string> = { max: 'Most', min: 'Least', alpha: 'A–Z' };
+const SORT_ORDER: SortMode[] = ['max', 'min', 'alpha', 'benchMax', 'benchMin'];
+
+const SORT_LABEL: Record<SortMode, string> = {
+  max: 'Time↓',
+  min: 'Time↑',
+  alpha: 'A–Z',
+  benchMax: 'Bench↓',
+  benchMin: 'Bench↑',
+};
+
+const SORT_TITLE: Record<SortMode, string> = {
+  max: 'most time on pitch',
+  min: 'least time on pitch',
+  alpha: 'alphabetical',
+  benchMax: 'most times benched',
+  benchMin: 'fewest times benched',
+};
 
 const nextSort = (m: SortMode): SortMode =>
-  m === 'max' ? 'min' : m === 'min' ? 'alpha' : 'max';
+  SORT_ORDER[(SORT_ORDER.indexOf(m) + 1) % SORT_ORDER.length];
 
 function sortPlayers(list: Player[], mode: SortMode, ms: number): Player[] {
   const arr = list.slice();
@@ -37,6 +53,10 @@ function sortPlayers(list: Player[], mode: SortMode, ms: number): Player[] {
     arr.sort((a, b) => a.name.localeCompare(b.name));
   } else if (mode === 'min') {
     arr.sort((a, b) => liveTimeOnPitch(a, ms) - liveTimeOnPitch(b, ms));
+  } else if (mode === 'benchMax') {
+    arr.sort((a, b) => b.benchCount - a.benchCount || liveTimeOnPitch(b, ms) - liveTimeOnPitch(a, ms));
+  } else if (mode === 'benchMin') {
+    arr.sort((a, b) => a.benchCount - b.benchCount || liveTimeOnPitch(a, ms) - liveTimeOnPitch(b, ms));
   } else {
     arr.sort((a, b) => liveTimeOnPitch(b, ms) - liveTimeOnPitch(a, ms));
   }
@@ -244,7 +264,7 @@ export function MatchScreen() {
               <SortToggle
                 label={SORT_LABEL[benchSort]}
                 onClick={() => setBenchSort(nextSort)}
-                title={`Sort bench: ${SORT_LABEL[benchSort]} — tap to change`}
+                title={`Bench sorted by ${SORT_TITLE[benchSort]} — tap to change`}
               />
             )}
           </div>
@@ -265,7 +285,7 @@ export function MatchScreen() {
               <SortToggle
                 label={SORT_LABEL[pitchSort]}
                 onClick={() => setPitchSort(nextSort)}
-                title={`Sort pitch: ${SORT_LABEL[pitchSort]} — tap to change`}
+                title={`Pitch sorted by ${SORT_TITLE[pitchSort]} — tap to change`}
               />
             )}
           </div>

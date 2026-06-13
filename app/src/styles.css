@@ -1080,22 +1080,22 @@ body {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   background: var(--surface2);
   border: none;
   border-radius: 6px;
   color: var(--muted);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 3px 6px;
+  letter-spacing: 0.02em;
+  padding: 3px 5px;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
 }
 .sort-toggle:hover { color: var(--text); background: var(--border); }
-.sort-toggle-icon { width: 11px; height: 11px; flex-shrink: 0; }
+.sort-toggle-icon { width: 10px; height: 10px; flex-shrink: 0; }
 
 .player-cards {
   flex: 1;

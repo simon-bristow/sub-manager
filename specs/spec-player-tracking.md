@@ -44,16 +44,19 @@ Each player (on pitch or bench) is shown as a compact single-line card:
 
 ## Sorting
 
-Both the **Pitch** and **Bench** columns have their own sort toggle in the column header — a standard sort icon plus a short label showing the active mode. Tapping it cycles through three modes:
+Both the **Pitch** and **Bench** columns have their own sort toggle in the column header — a standard sort icon plus a short label showing the active mode. Tapping it cycles through five modes:
 
 | Mode | Label | Order |
 |---|---|---|
-| Max time | **Most** | Most time on pitch first (default) — spot who is due for a rest |
-| Min time | **Least** | Least time on pitch first — spot who needs minutes |
+| Max time | **Time↓** | Most time on pitch first (default) — spot who is due for a rest |
+| Min time | **Time↑** | Least time on pitch first — spot who needs minutes |
 | Alphabetical | **A–Z** | By player name — quickly find a specific player |
+| Max bench | **Bench↓** | Most times benched first — spot who's been rotated most |
+| Min bench | **Bench↑** | Fewest times benched first — spot who's never been rested |
 
+- The two bench modes order by each player's **bench count** (see Player Cards); ties fall back to time on pitch
 - The toggle appears only when the column holds more than one player
-- Each column remembers its own mode independently; both default to **Most**
+- Each column remembers its own mode independently; both default to **Time↓**
 - The list re-sorts live (every tick) so the order stays accurate as time accumulates and after every substitution
 - The Subs column uses the same-looking toggle to flip log order between **Latest** and **Earliest** (see [spec-substitutions.md](spec-substitutions.md))
 
