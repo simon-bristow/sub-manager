@@ -18,6 +18,7 @@ export function PlayerCard({ player, onLongPress }: Props) {
   );
   const allPlayers = useMatchStore((s) => s.players);
   const pendingOn = useMatchStore((s) => s.pendingOn);
+  const pendingOff = useMatchStore((s) => s.pendingOff);
   const stagedSubs = useMatchStore((s) => s.stagedSubs);
   const selectPlayer = useMatchStore((s) => s.selectPlayer);
 
@@ -30,7 +31,8 @@ export function PlayerCard({ player, onLongPress }: Props) {
 
   const isStagedOff = stagedSubs.some((s) => s.kind === 'swap' && s.offId === player.id);
   const isStagedOn = stagedSubs.some((s) => s.onId === player.id);
-  const isPending = pendingOn === player.id;
+  const isPendingOn = pendingOn === player.id;
+  const isPendingOff = pendingOff === player.id;
 
   const handlers = useLongPress(
     () => onLongPress(player.id),
@@ -40,8 +42,8 @@ export function PlayerCard({ player, onLongPress }: Props) {
   const cls = [
     'player-card',
     player.onPitch ? 'on-pitch' : 'on-bench',
-    isStagedOff ? 'selected-off' : '',
-    isStagedOn || isPending ? 'selected-on' : '',
+    isStagedOff || isPendingOff ? 'selected-off' : '',
+    isStagedOn || isPendingOn ? 'selected-on' : '',
   ]
     .filter(Boolean)
     .join(' ');

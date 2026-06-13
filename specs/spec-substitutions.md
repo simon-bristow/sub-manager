@@ -93,6 +93,9 @@ The **★** button in the match header opens a "Suggested Subs" panel that recom
 
 ## Constraints
 
+- **A swap requires one pitch player and one bench player.** A pair is only staged once one of each is selected — the order doesn't matter. Selecting a second player on the *same* side (two pitch, or two bench) simply moves the highlighted pending selection to the newly-tapped player rather than staging anything. This guarantees every swap is a valid pitch↔bench match.
+- Tapping the currently-pending player again clears the selection (deselect)
+- The pending selection is shown by a coloured card border — **red** for a pitch player waiting to come off, **green** for a bench player waiting to come on — plus a hint line in the substitution bar
 - A player already staged as "coming off" cannot be selected again
 - A player already staged as "coming on" cannot be selected again
 - Tapping an already-staged pitch player has no effect (must use individual ✕ to remove)

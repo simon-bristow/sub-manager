@@ -2,6 +2,7 @@ import { useMatchStore } from '../state/useMatchStore';
 
 export function SubBar() {
   const pendingOn = useMatchStore((s) => s.pendingOn);
+  const pendingOff = useMatchStore((s) => s.pendingOff);
   const stagedSubs = useMatchStore((s) => s.stagedSubs);
   const players = useMatchStore((s) => s.players);
   const config = useMatchStore((s) => s.config);
@@ -9,7 +10,7 @@ export function SubBar() {
   const cancelStaging = useMatchStore((s) => s.cancelStaging);
   const confirmAll = useMatchStore((s) => s.confirmAll);
 
-  const visible = pendingOn !== null || stagedSubs.length > 0;
+  const visible = pendingOn !== null || pendingOff !== null || stagedSubs.length > 0;
   if (!visible) return null;
 
   const onPitchCount = players.filter((p) => p.onPitch).length;
@@ -66,6 +67,15 @@ export function SubBar() {
           ? `↑ ${onP.name} coming on — tap a pitch player to swap, or tap an empty slot`
           : `↑ ${onP.name} coming on — now tap a pitch player to swap`;
         return <div id="pending-hint" className="pending-hint">{msg}</div>;
+      })()}
+      {pendingOff !== null && (() => {
+        const offP = players.find((p) => p.id === pendingOff);
+        if (!offP) return null;
+        return (
+          <div id="pending-hint" className="pending-hint">
+            ↓ {offP.name} coming off — now tap a bench player to swap
+          </div>
+        );
       })()}
     </div>
   );

@@ -25,7 +25,8 @@ interface MatchState {
   fullTimeSaved: boolean; // idempotency guard for endMatch
 
   // Subs
-  pendingOn: string | null;
+  pendingOn: string | null; // bench player tapped, waiting for a pitch player / empty slot
+  pendingOff: string | null; // pitch player tapped, waiting for a bench player
   stagedSubs: StagedSub[];
   subLog: SubLogEntry[];
 
@@ -98,6 +99,7 @@ const INITIAL: Omit<
   matchOver: false,
   fullTimeSaved: false,
   pendingOn: null,
+  pendingOff: null,
   stagedSubs: [],
   subLog: [],
   nextAlertAt: 0,
@@ -194,22 +196,36 @@ export const useMatchStore = create<MatchState>()(
           return;
         }
 
-        if (!p.onPitch) {
-          // bench tap
-          if (s.pendingOn === id) {
-            set({ pendingOn: null });
-          } else {
-            set({ pendingOn: id });
-          }
-        } else {
-          // pitch tap
-          if (s.pendingOn !== null) {
+        // Symmetric selection: the coach may start from either the pitch or
+        // the bench. A swap is only staged once one of each is chosen.
+        if (p.onPitch) {
+          // pitch tap → candidate "coming off"
+          if (s.pendingOff === id) {
+            set({ pendingOff: null }); // toggle off
+          } else if (s.pendingOn !== null) {
+            // a bench player is already waiting → complete the swap
             set({
               stagedSubs: [...s.stagedSubs, { kind: 'swap', offId: id, onId: s.pendingOn }],
               pendingOn: null,
+              pendingOff: null,
             });
+          } else {
+            set({ pendingOff: id }); // select (replacing any other pitch selection)
           }
-          // else: no-op (need to select a bench player first)
+        } else {
+          // bench tap → candidate "coming on"
+          if (s.pendingOn === id) {
+            set({ pendingOn: null }); // toggle off
+          } else if (s.pendingOff !== null) {
+            // a pitch player is already waiting → complete the swap
+            set({
+              stagedSubs: [...s.stagedSubs, { kind: 'swap', offId: s.pendingOff, onId: id }],
+              pendingOn: null,
+              pendingOff: null,
+            });
+          } else {
+            set({ pendingOn: id }); // select (replacing any other bench selection)
+          }
         }
       },
 
@@ -223,6 +239,7 @@ export const useMatchStore = create<MatchState>()(
         set({
           stagedSubs: [...s.stagedSubs, { kind: 'fill', onId: s.pendingOn }],
           pendingOn: null,
+          pendingOff: null,
         });
       },
 
@@ -231,7 +248,7 @@ export const useMatchStore = create<MatchState>()(
         set({ stagedSubs: s.stagedSubs.filter((_, i) => i !== index) });
       },
 
-      cancelStaging: () => set({ pendingOn: null, stagedSubs: [] }),
+      cancelStaging: () => set({ pendingOn: null, pendingOff: null, stagedSubs: [] }),
 
       confirmAll: () => {
         const s = get();
@@ -289,7 +306,7 @@ export const useMatchStore = create<MatchState>()(
         }
 
         if (pairs.length === 0) {
-          set({ stagedSubs: [], pendingOn: null });
+          set({ stagedSubs: [], pendingOn: null, pendingOff: null });
           return;
         }
 
@@ -301,6 +318,7 @@ export const useMatchStore = create<MatchState>()(
           players: updatedPlayers,
           stagedSubs: [],
           pendingOn: null,
+          pendingOff: null,
           subLog: [...s.subLog, { minute, pairs, snapshot }],
         });
       },
@@ -353,6 +371,7 @@ export const useMatchStore = create<MatchState>()(
           subLog: s.subLog.filter((_, i) => i !== index),
           stagedSubs: [...s.stagedSubs, ...restaged],
           pendingOn: null,
+          pendingOff: null,
         });
       },
 
@@ -378,6 +397,7 @@ export const useMatchStore = create<MatchState>()(
           players: s.players.filter((p) => p.id !== id),
           stagedSubs: filteredStaged,
           pendingOn: s.pendingOn === id ? null : s.pendingOn,
+          pendingOff: s.pendingOff === id ? null : s.pendingOff,
         });
       },
 
