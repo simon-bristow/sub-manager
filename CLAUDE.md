@@ -44,7 +44,7 @@ The version lives in one source of truth plus the commit message:
    bottom-right version badge and the About overlay)
 2. The commit message suffix: include `; v0.XX` at the end
 
-Current version after last commit: **v0.63**. Next commit should use **v0.64**, etc.
+Current version after last commit: **v0.64**. Next commit should use **v0.65**, etc.
 
 ## Stack
 

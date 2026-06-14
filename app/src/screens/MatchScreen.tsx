@@ -264,7 +264,6 @@ export function MatchScreen() {
         <div className="list-section">
           <div className="list-header">
             <span className="list-title">Bench</span>
-            <span id="bench-count" className="list-count">({onBench.length})</span>
             {onBench.length > 1 && (
               <SortToggle
                 label={SORT_LABEL[benchSort]}
@@ -283,9 +282,6 @@ export function MatchScreen() {
         <div className="list-section">
           <div className="list-header">
             <span className="list-title">Pitch</span>
-            <span id="pitch-count" className="list-count">
-              ({onPitch.length}/{config.teamSize})
-            </span>
             {onPitch.length > 1 && (
               <SortToggle
                 label={SORT_LABEL[pitchSort]}
