@@ -107,7 +107,8 @@ The **★** button in the match header opens a "Suggested Subs" panel that recom
 
 After **Confirm All** is tapped, one grouped log event is created containing all pairs from that action:
 
-- **Minute** — match minute stamp at the top of the event card. 1st half = elapsed minutes in the current half; 2nd half = elapsed minutes in the current half + the configured **minutes per half** value (so for a 30-minute half, a sub at 5:00 of the 2nd half logs as minute 35)
+- **Order number** — a small `#N` label (e.g. `#1`, `#2`) shown before the minute stamp, indicating whether this was the 1st, 2nd, 3rd… substitution event of the match. This persists regardless of the display sort order (Latest/Earliest), so the coach can always tell which sub came first
+- **Minute** — match minute stamp shown immediately after the order number. 1st half = elapsed minutes in the current half; 2nd half = elapsed minutes in the current half + the configured **minutes per half** value (so for a 30-minute half, a sub at 5:00 of the 2nd half logs as minute 35)
 - **Grouped by direction, side by side** — rather than pairing on/off line by line, the event shows two columns: all players **coming on** (↑ green) in the left column and all players **coming off** (↓ red) in the right column, separated by a thin vertical divider. The two-column layout keeps a busy log compact (each event is roughly half the height of a stacked list) and makes multi-substitution combinations easy to scan ("these came on, these went off")
 - Names are truncated with an ellipsis to fit the narrow column; the full names are always visible in the long-press popup (below)
 - Solo bring-ons (empty-slot fills) simply appear in the ↑ column with no corresponding ↓ entry; if an event has no players coming off, only the left column is shown (full width)

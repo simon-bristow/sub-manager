@@ -330,6 +330,7 @@ export function MatchScreen() {
                 key={i}
                 entry={subLog[i]}
                 index={i}
+                subNumber={i + 1}
                 onLongPress={setSubActionIndex}
               />
             ))}

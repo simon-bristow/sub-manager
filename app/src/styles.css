@@ -1375,6 +1375,19 @@ body {
 }
 .sub-action-summary .log-on,
 .sub-action-summary .log-off { font-size: 14px; }
+.log-header {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+}
+.log-order {
+  font-size: 9px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  opacity: 0.6;
+}
 .log-time {
   font-size: 10px;
   font-variant-numeric: tabular-nums;

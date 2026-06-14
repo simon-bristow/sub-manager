@@ -4,10 +4,11 @@ import type { SubLogEntry } from '../domain/types';
 interface Props {
   entry: SubLogEntry;
   index: number;
+  subNumber: number;
   onLongPress: (index: number) => void;
 }
 
-export function SubLogCard({ entry, index, onLongPress }: Props) {
+export function SubLogCard({ entry, index, subNumber, onLongPress }: Props) {
   const ons = entry.pairs.map((p) => p.onName);
   const offs = entry.pairs.map((p) => p.offName).filter((n): n is string => !!n);
   const handlers = useLongPress(
@@ -16,7 +17,10 @@ export function SubLogCard({ entry, index, onLongPress }: Props) {
   );
   return (
     <div className="sub-log-entry" {...handlers}>
-      <span className="log-time">{entry.minute}'</span>
+      <div className="log-header">
+        <span className="log-order">#{subNumber}</span>
+        <span className="log-time">{entry.minute}'</span>
+      </div>
       <div className="log-pairs">
         <div className="log-group">
           {ons.map((name, j) => (
