@@ -177,7 +177,7 @@ export function MatchScreen() {
   const stagedSoloOn = stagedSubs.filter((s) => s.kind === 'fill').length;
   const totalEmpty = config.teamSize - onPitch.length;
   const freeEmpty = totalEmpty - stagedSoloOn;
-  const subTotal = subLog.reduce((n, e) => n + e.pairs.length, 0);
+
 
   const halfBtnLabel = half < config.periods ? 'H/T' : 'F/T';
 
@@ -306,9 +306,6 @@ export function MatchScreen() {
         <div className="list-section">
           <div className="list-header">
             <span className="list-title">Subs</span>
-            <span id="sub-count" className="list-count">
-              {subTotal > 0 ? `(${subTotal})` : ''}
-            </span>
             {subLog.length > 1 && (
               <SortToggle
                 label={subOrder === 'latest' ? 'Latest' : 'Earliest'}
