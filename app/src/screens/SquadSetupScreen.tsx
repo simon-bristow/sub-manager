@@ -22,37 +22,32 @@ import {
   removePlayerFromTeam,
 } from '../firebase/teams';
 import { Overlay } from '../components/Overlay';
+import { useLongPress } from '../hooks/useLongPress';
 
 type Group = 'pitch' | 'bench' | 'absent';
 
 interface RosterCardProps {
   entry: RosterEntry;
   onTap: (name: string) => void;
+  onLongPress: (name: string) => void;
 }
 
-function RosterCard({ entry, onTap }: RosterCardProps) {
+function RosterCard({ entry, onTap, onLongPress }: RosterCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: entry.name });
+  // dnd-kit PointerSensor uses onPointerDown; useLongPress uses onMouseDown/onTouchStart — no conflict.
+  const lp = useLongPress(
+    () => { if (!isDragging) onLongPress(entry.name); },
+    () => onTap(entry.name),
+  );
   return (
     <div
       ref={setNodeRef}
       className={`roster-card ${entry.group}-card${isDragging ? ' is-dragging' : ''}`}
       {...attributes}
       {...listeners}
-      onClick={() => onTap(entry.name)}
+      {...lp}
     >
       {entry.name}
-    </div>
-  );
-}
-
-function BinZone() {
-  const { setNodeRef, isOver } = useDroppable({ id: 'bin' });
-  return (
-    <div
-      ref={setNodeRef}
-      className={`bin-zone${isOver ? ' drag-over' : ''}`}
-    >
-      🗑 Drop here to remove
     </div>
   );
 }
@@ -163,10 +158,6 @@ export function SquadSetupScreen() {
     const name = String(e.active.id);
     if (!e.over) return;
     const target = String(e.over.id);
-    if (target === 'bin') {
-      setRemoveTarget(name);
-      return;
-    }
     if (target === 'gk') {
       setGkName(name);
       setRoster((r) =>
@@ -275,10 +266,10 @@ export function SquadSetupScreen() {
                   key={e.name}
                   entry={e}
                   onTap={tap}
+                  onLongPress={setRemoveTarget}
                 />
               ))}
             </div>
-            <BinZone />
           </Zone>
 
           <Zone
@@ -293,6 +284,7 @@ export function SquadSetupScreen() {
                   key={e.name}
                   entry={e}
                   onTap={tap}
+                  onLongPress={setRemoveTarget}
                 />
               ))}
             </div>
@@ -304,13 +296,14 @@ export function SquadSetupScreen() {
             count={`${pitchCount}/${config.teamSize}`}
             className="setup-zone-pitch"
           >
-            <GKSlot gkEntry={gkEntry} onTap={tap} />
+            <GKSlot gkEntry={gkEntry} onTap={tap} onLongPress={setRemoveTarget} />
             <div id="pitch-cards" className="zone-cards">
               {grouped.pitch.map((e) => (
                 <RosterCard
                   key={e.name}
                   entry={e}
                   onTap={tap}
+                  onLongPress={setRemoveTarget}
                 />
               ))}
               {Array.from({ length: Math.max(0, config.teamSize - 1 - grouped.pitch.length - (gkEntry ? 0 : 0)) }).map((_, i) => (
@@ -366,9 +359,11 @@ export function SquadSetupScreen() {
 function GKSlot({
   gkEntry,
   onTap,
+  onLongPress,
 }: {
   gkEntry: RosterEntry | null | undefined;
   onTap: (n: string) => void;
+  onLongPress: (n: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'gk' });
   return (
@@ -378,7 +373,7 @@ function GKSlot({
       className={`gk-slot${isOver ? ' drag-over' : ''}`}
     >
       <span className="gk-badge">GK</span>
-      {gkEntry && <RosterCard entry={gkEntry} onTap={onTap} />}
+      {gkEntry && <RosterCard entry={gkEntry} onTap={onTap} onLongPress={onLongPress} />}
     </div>
   );
 }

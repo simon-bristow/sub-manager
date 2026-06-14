@@ -66,14 +66,13 @@ A single tap on a roster card moves it according to the rules below — a faster
 
 ---
 
-## Drag-to-Bin Removal
+## Player Removal (Long-Press)
 
-A **bin zone** sits at the bottom of the Squad column, styled with a red dashed border and a 🗑 icon. When a player card is dragged over it, the zone highlights with a red tint.
+Long-pressing (600 ms) any player card — in any column (Squad, Bench, or Starting, including the GK slot) — opens a confirmation overlay: *"Remove player? Their season stats will also be deleted."*
 
-- Dropping any player card onto the bin zone opens a confirmation overlay: *"Remove player? Their season stats will also be deleted."*
 - Confirming **hard-deletes** the player: the Firestore player document (including `seasonMinutes` and `appearances`) is removed, and the player disappears from the local roster. The deletion is not reversible from within the app.
 - Cancelling closes the overlay with no change
-- Players from any column (Squad, Bench, or Starting) can be dragged to the bin
+- This replaces the previous drag-to-bin zone. The interaction matches the long-press-to-action pattern used elsewhere in the app (sub log undo, match-screen player options).
 
 ---
 
