@@ -198,6 +198,7 @@ export function MatchScreen() {
             className="ctrl-btn green"
             disabled={matchOver}
             onClick={toggleTimer}
+            title={timerStartedAt !== null ? 'Pause' : 'Play'}
           >
             {timerStartedAt !== null ? '⏸' : '▶'}
           </button>
@@ -214,6 +215,7 @@ export function MatchScreen() {
                 setFtConfirmVisible(true);
               }
             }}
+            title={half < config.periods ? 'Half-time' : 'Full-time'}
           >
             {halfBtnLabel}
           </button>
@@ -222,6 +224,7 @@ export function MatchScreen() {
             className="ctrl-btn"
             disabled={matchOver}
             onClick={() => setSuggestionsVisible(true)}
+            title="Suggest substitutions"
           >
             ★
           </button>
@@ -230,6 +233,7 @@ export function MatchScreen() {
             className="ctrl-btn add"
             disabled={matchOver}
             onClick={() => setAddPlayerVisible(true)}
+            title="Add player to bench"
           >
             +
           </button>
@@ -237,6 +241,7 @@ export function MatchScreen() {
             id="reset-btn"
             className="ctrl-btn danger"
             onClick={() => setResetVisible(true)}
+            title="Discard match"
           >
             ✕
           </button>
